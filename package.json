@@ -1,0 +1,23 @@
+{
+  "name": "ytd-report-image-generator",
+  "version": "1.0.0",
+  "description": "API for generating report images from JSON payloads",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "report",
+    "image",
+    "api",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "pngjs": "^7.0.0"
+  }
+}

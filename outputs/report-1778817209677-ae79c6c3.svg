@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1600" height="980" viewBox="0 0 1600 980" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="980" fill="#f5f7fb"/>
+  <text x="28" y="42" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#111827">Management Monitoring Dashboard</text>
+  <text x="620" y="42" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#6b7280">(9AM - 10AM)</text>
+  <text x="1320" y="40" font-size="22" font-family="Arial, sans-serif" fill="#111827">◷</text>
+  <text x="1570" y="40" text-anchor="end" font-size="22" font-family="Arial, sans-serif" fill="#111827">Last updated 10:23 am</text>
+
+  <rect x="20" y="80" rx="16" ry="16" width="375" height="120" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="38" y="100" rx="16" ry="16" width="70" height="70" fill="#0a2f73"/>
+  <text x="126" y="116" font-size="16" font-family="Arial, sans-serif" fill="#111827">Total Sales</text>
+  <text x="126" y="154" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#111827">328641.02 M MMK</text>
+  <text x="126" y="178" font-size="15" font-family="Arial, sans-serif" fill="#15803d">↗ 8.7% YTD value</text>
+<rect x="415" y="80" rx="16" ry="16" width="375" height="120" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="433" y="100" rx="16" ry="16" width="70" height="70" fill="#0a2f73"/>
+  <text x="521" y="116" font-size="16" font-family="Arial, sans-serif" fill="#111827">Invoice / Day</text>
+  <text x="521" y="154" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#111827">745,858</text>
+  <text x="521" y="178" font-size="15" font-family="Arial, sans-serif" fill="#15803d">↗ 5.3% YTD value</text>
+<rect x="810" y="80" rx="16" ry="16" width="375" height="120" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="828" y="100" rx="16" ry="16" width="70" height="70" fill="#0a2f73"/>
+  <text x="916" y="116" font-size="16" font-family="Arial, sans-serif" fill="#111827">Kyat / Invoice</text>
+  <text x="916" y="154" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#111827">440,621 MMK</text>
+  <text x="916" y="178" font-size="15" font-family="Arial, sans-serif" fill="#dc2626">↘ -2.9% YTD value</text>
+<rect x="1205" y="80" rx="16" ry="16" width="375" height="120" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="1223" y="100" rx="16" ry="16" width="70" height="70" fill="#0a2f73"/>
+  <text x="1311" y="116" font-size="16" font-family="Arial, sans-serif" fill="#111827">No. of Customer</text>
+  <text x="1311" y="154" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#111827">216,299</text>
+  <text x="1311" y="178" font-size="15" font-family="Arial, sans-serif" fill="#15803d">↗ 4.2% YTD value</text>
+  <rect x="20" y="215" rx="16" ry="16" width="375" height="330" fill="#072860" stroke="#062150"/>
+  <circle cx="108" cy="305" r="55" fill="none" stroke="#e5e7eb" stroke-width="20"/>
+  <circle cx="108" cy="305" r="55" fill="none" stroke="#f87171" stroke-width="20" stroke-dasharray="60.720000000000006 345" transform="rotate(-90 108 305)"/>
+  <text x="108" y="314" text-anchor="middle" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#f87171">17.6%</text>
+  <text x="182" y="300" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#fff">TODAY SALE</text>
+  <text x="182" y="328" font-size="12" font-family="Arial, sans-serif" fill="#dbeafe">Grand Total vs. YTD</text>
+  <line x1="56" y1="375" x2="356" y2="375" stroke="#8aa2ce"/>
+  <text x="56" y="418" font-size="14" font-family="Arial, sans-serif" fill="#fff">Today:</text>
+  <text x="370" y="418" text-anchor="end" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#fff">328641.02M MMK</text>
+  <text x="56" y="458" font-size="14" font-family="Arial, sans-serif" fill="#fca5a5">↘ YTD avg:</text>
+  <text x="370" y="458" text-anchor="end" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#fff">279344.87M MMK</text>
+
+  <rect x="415" y="215" rx="16" ry="16" width="505" height="330" fill="#fff" stroke="#dbe2ef"/>
+  <text x="438" y="245" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#111827">YTD vs Current Day Comparison</text>
+  <line x1="445" y1="280" x2="890" y2="280" stroke="#e5e7eb"/>
+<line x1="445" y1="330" x2="890" y2="330" stroke="#e5e7eb"/>
+<line x1="445" y1="380" x2="890" y2="380" stroke="#e5e7eb"/>
+<line x1="445" y1="430" x2="890" y2="430" stroke="#e5e7eb"/>
+<line x1="445" y1="480" x2="890" y2="480" stroke="#e5e7eb"/>
+<rect x="457" y="401.5693842127056" width="43.625" height="78.43061578729441" fill="#032a6b"/>
+<rect x="506.625" y="413.33397658079974" width="43.625" height="66.66602341920024" fill="#0d4ea6"/>
+<text x="507.625" y="508" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">Sales</text>
+<rect x="568.25" y="302" width="43.625" height="178" fill="#032a6b"/>
+<rect x="617.875" y="312.68000000000006" width="43.625" height="167.31999999999996" fill="#0d4ea6"/>
+<text x="618.875" y="508" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">Invoice/Day</text>
+<rect x="679.5" y="479.89484511021226" width="43.625" height="0.10515488978772691" fill="#032a6b"/>
+<rect x="729.125" y="479.8916904635186" width="43.625" height="0.1083095364813587" fill="#0d4ea6"/>
+<text x="730.125" y="508" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">Kyat/Invoice</text>
+<rect x="790.75" y="428.3799570427615" width="43.625" height="51.62004295723851" fill="#032a6b"/>
+<rect x="840.375" y="430.44475876105105" width="43.625" height="49.555241238948966" fill="#0d4ea6"/>
+<text x="841.375" y="508" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">Customers</text>
+
+  <rect x="935" y="215" rx="16" ry="16" width="645" height="330" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="935" y="215" rx="16" ry="16" width="645" height="58" fill="#072860"/>
+  <text x="958" y="253" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#fff">SALES TREND (Today vs YTD Avg)</text>
+  <line x1="972" y1="290" x2="1532" y2="290" stroke="#e5e7eb"/>
+<line x1="972" y1="345" x2="1532" y2="345" stroke="#e5e7eb"/>
+<line x1="972" y1="400" x2="1532" y2="400" stroke="#e5e7eb"/>
+<line x1="972" y1="455" x2="1532" y2="455" stroke="#e5e7eb"/>
+<rect x="985" y="416.340206185567" width="43" height="38.659793814432994" fill="#072860"/>
+<rect x="1034" y="422.13917525773195" width="43" height="32.86082474226804" fill="#b0bfd4"/>
+<text x="1035" y="485" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">9:00</text>
+<rect x="1097" y="388.50515463917526" width="43" height="66.49484536082475" fill="#072860"/>
+<rect x="1146" y="398.47938144329896" width="43" height="56.52061855670104" fill="#b0bfd4"/>
+<text x="1147" y="485" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">9:15</text>
+<rect x="1209" y="360.6701030927835" width="43" height="94.3298969072165" fill="#072860"/>
+<rect x="1258" y="374.819587628866" width="43" height="80.18041237113404" fill="#b0bfd4"/>
+<text x="1259" y="485" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">9:30</text>
+<rect x="1321" y="332.83505154639175" width="43" height="122.16494845360826" fill="#072860"/>
+<rect x="1370" y="351.159793814433" width="43" height="103.84020618556703" fill="#b0bfd4"/>
+<text x="1371" y="485" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">9:45</text>
+<rect x="1433" y="305" width="43" height="150" fill="#072860"/>
+<rect x="1482" y="327.5" width="43" height="127.5" fill="#b0bfd4"/>
+<text x="1483" y="485" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">10:00</text>
+  <text x="972" y="520" font-size="11" font-family="Arial, sans-serif" fill="#111827">Total Today Sales</text>
+  <text x="972" y="536" font-size="11" font-family="Arial, sans-serif" font-weight="700" fill="#111827">328641.02 M MMK</text>
+  <text x="1248" y="520" font-size="11" font-family="Arial, sans-serif" fill="#111827">YTD Avg (Same Time)</text>
+  <text x="1248" y="536" font-size="11" font-family="Arial, sans-serif" font-weight="700" fill="#111827">279344.87 M MMK</text>
+
+  <rect x="20" y="565" rx="16" ry="16" width="770" height="385" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="20" y="565" rx="16" ry="16" width="770" height="56" fill="#072860"/>
+  <text x="243" y="602" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Sales Performance by Region &amp; Branch</text>
+  
+    <rect x="34" y="642" width="250" height="294" rx="8" ry="8" fill="#eef4fb" stroke="#dbe2ef"/>
+    <rect x="34" y="642" width="250" height="294" rx="8" ry="8" fill="#eef4fb" stroke="#dbe2ef"/><path d="M102.40 660.30 L116.71 664.57 L135.27 670.76 L142.99 678.57 L160.90 680.49 L170.78 687.55 L174.33 699.08 L185.16 708.15 L192.62 718.98 L195.19 735.00 L203.94 737.67 L199.92 749.16 L210.19 754.36 L216.20 767.60 L208.59 775.95 L203.79 782.05 L196.03 792.48 L179.96 812.08 L174.14 824.01 L180.82 830.30 L189.59 845.91 L195.24 862.03 L192.60 880.09 L187.89 891.15 L182.93 907.42 L190.42 916.75 L189.10 917.70 L182.74 911.55 L177.46 902.79 L173.46 892.96 L168.40 886.39 L158.45 877.84 L151.15 871.27 L144.07 857.63 L140.38 842.02 L136.02 832.91 L132.11 824.39 L127.63 816.46 L121.08 803.03 L118.54 787.80 L126.44 770.83 L131.33 760.32 L126.20 749.27 L122.01 740.45 L115.91 736.37 L114.44 725.82 L109.08 721.33 L101.80 709.47 L105.00 693.81 L111.94 683.88 L102.40 660.30 Z" fill="#d9c9a0" stroke="#bd9f5a" stroke-width="2"/>
+    
+      <text x="363" y="706" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">MM-105-/-Mawlamyine</text>
+      <text x="510" y="706" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">387.38M</text>
+      <text x="604" y="706" font-size="12" font-family="Arial, sans-serif" fill="#15803d">+214.8%</text>
+      <text x="690" y="706" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">Surface Covering</text>
+      <circle cx="162" cy="760" r="5.5" fill="#ff304f"/>
+      <rect x="170" y="752" rx="4" ry="4" width="58" height="16" fill="#0b1d57"/>
+      <text x="199" y="764" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Z.HIM</text>
+    
+      <text x="363" y="747" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">MM-103-/-Satsan</text>
+      <text x="510" y="747" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">375.64M</text>
+      <text x="604" y="747" font-size="12" font-family="Arial, sans-serif" fill="#15803d">+213%</text>
+      <text x="690" y="747" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">Home Appliance</text>
+      <circle cx="200" cy="720" r="5.5" fill="#ff304f"/>
+      <rect x="208" y="712" rx="4" ry="4" width="58" height="16" fill="#0b1d57"/>
+      <text x="237" y="724" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" font-weight="700" fill="#fff">S.CAM</text>
+    
+      <text x="363" y="788" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">MM-101-/-Lanthit</text>
+      <text x="510" y="788" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">332.67M</text>
+      <text x="604" y="788" font-size="12" font-family="Arial, sans-serif" fill="#15803d">+240.8%</text>
+      <text x="690" y="788" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">Home Appliance</text>
+      <circle cx="188" cy="792" r="5.5" fill="#ff304f"/>
+      <rect x="196" y="784" rx="4" ry="4" width="58" height="16" fill="#0b1d57"/>
+      <text x="225" y="796" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" font-weight="700" fill="#fff">S.AMFI</text>
+    
+      <text x="363" y="829" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">MM-104-/-East Dagon</text>
+      <text x="510" y="829" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">247.70M</text>
+      <text x="604" y="829" font-size="12" font-family="Arial, sans-serif" fill="#15803d">+214.8%</text>
+      <text x="690" y="829" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">Home Appliance</text>
+      <circle cx="214" cy="775" r="5.5" fill="#ff304f"/>
+      <rect x="222" y="767" rx="4" ry="4" width="58" height="16" fill="#0b1d57"/>
+      <text x="251" y="779" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" font-weight="700" fill="#fff">K.YSM</text>
+    
+      <text x="363" y="870" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">MM-107-/-Hlaing Tharyar</text>
+      <text x="510" y="870" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">189.71M</text>
+      <text x="604" y="870" font-size="12" font-family="Arial, sans-serif" fill="#15803d">+158.7%</text>
+      <text x="690" y="870" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">Home Appliance</text>
+      <circle cx="142" cy="828" r="5.5" fill="#ff304f"/>
+      <rect x="150" y="820" rx="4" ry="4" width="58" height="16" fill="#0b1d57"/>
+      <text x="179" y="832" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" font-weight="700" fill="#fff">B.107</text>
+    
+    <rect x="340" y="640" width="440" height="30" fill="#072860"/>
+    <text x="362" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Location</text>
+    <text x="510" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Today</text>
+    <text x="604" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Growth</text>
+    <text x="690" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Top Category</text>
+
+    <rect x="340" y="884" width="440" height="48" fill="#0b1d57"/>
+    <text x="362" y="913" font-size="12" font-family="Arial, sans-serif" fill="#fff">Gerd Total</text>
+    <text x="500" y="913" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#fff">2948.98M</text>
+    <text x="594" y="913" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#15803d">+227.5%</text>
+    <text x="690" y="913" font-size="12" font-family="Arial, sans-serif" fill="#fff">All categories</text>
+  
+
+  <rect x="810" y="565" rx="16" ry="16" width="770" height="385" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="810" y="565" rx="16" ry="16" width="770" height="56" fill="#072860"/>
+  <text x="834" y="602" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Sales Distribution By Category (Today)</text>
+  <circle cx="980" cy="775" r="118" fill="none" stroke="#0b3b92" stroke-width="42" stroke-dasharray="193.5395719330827 547.8762943141085" stroke-dashoffset="0" transform="rotate(-90 980 775)"/>
+<circle cx="980" cy="775" r="118" fill="none" stroke="#144bb0" stroke-width="42" stroke-dasharray="192.74380664426005 548.6720596029311" stroke-dashoffset="-193.5395719330827" transform="rotate(-90 980 775)"/>
+<circle cx="980" cy="775" r="118" fill="none" stroke="#2d63c0" stroke-width="42" stroke-dasharray="119.83089070880584 621.5849755383854" stroke-dashoffset="-386.2833785773428" transform="rotate(-90 980 775)"/>
+<circle cx="980" cy="775" r="118" fill="none" stroke="#6d93d1" stroke-width="42" stroke-dasharray="118.7008279875239 622.7150382596673" stroke-dashoffset="-506.1142692861486" transform="rotate(-90 980 775)"/>
+<circle cx="980" cy="775" r="118" fill="none" stroke="#adbfde" stroke-width="42" stroke-dasharray="116.60076897351856 624.8150972736726" stroke-dashoffset="-624.8150972736726" transform="rotate(-90 980 775)"/>
+  <circle cx="980" cy="775" r="74" fill="#fff"/>
+  <text x="980" y="759" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" fill="#4b5563">Total Sales</text>
+  <text x="980" y="793" text-anchor="middle" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#111827">328641.02 M</text>
+  <text x="980" y="819" text-anchor="middle" font-size="15" font-family="Arial, sans-serif" fill="#4b5563">MMK</text>
+  <circle cx="1145" cy="705" r="8" fill="#1e3a8a"/>
+      <text x="1167" y="713" font-size="12" font-family="Arial, sans-serif" fill="#111827">Home Appliance</text>
+      <text x="1460" y="713" font-size="12" font-family="Arial, sans-serif" fill="#111827">46497.95 M MMK</text>
+      <text x="1530" y="713" font-size="12" font-family="Arial, sans-serif" fill="#111827">14%</text>
+<circle cx="1145" cy="747" r="8" fill="#1e3a8a"/>
+      <text x="1167" y="755" font-size="12" font-family="Arial, sans-serif" fill="#111827">Surface Covering</text>
+      <text x="1460" y="755" font-size="12" font-family="Arial, sans-serif" fill="#111827">46306.77 M MMK</text>
+      <text x="1530" y="755" font-size="12" font-family="Arial, sans-serif" fill="#111827">14%</text>
+<circle cx="1145" cy="789" r="8" fill="#1e3a8a"/>
+      <text x="1167" y="797" font-size="12" font-family="Arial, sans-serif" fill="#111827">Sanitary Ware</text>
+      <text x="1460" y="797" font-size="12" font-family="Arial, sans-serif" fill="#111827">28789.41 M MMK</text>
+      <text x="1530" y="797" font-size="12" font-family="Arial, sans-serif" fill="#111827">9%</text>
+<circle cx="1145" cy="831" r="8" fill="#1e3a8a"/>
+      <text x="1167" y="839" font-size="12" font-family="Arial, sans-serif" fill="#111827">Furniture and Bedding</text>
+      <text x="1460" y="839" font-size="12" font-family="Arial, sans-serif" fill="#111827">28517.92 M MMK</text>
+      <text x="1530" y="839" font-size="12" font-family="Arial, sans-serif" fill="#111827">9%</text>
+<circle cx="1145" cy="873" r="8" fill="#1e3a8a"/>
+      <text x="1167" y="881" font-size="12" font-family="Arial, sans-serif" fill="#111827">Paint and Chemical</text>
+      <text x="1460" y="881" font-size="12" font-family="Arial, sans-serif" fill="#111827">28013.38 M MMK</text>
+      <text x="1530" y="881" font-size="12" font-family="Arial, sans-serif" fill="#111827">9%</text>
+</svg>

@@ -1,0 +1,50 @@
+[
+  {
+    "product_category_name": "01-Cement and Block",
+    "branch_name": "MM-101-/-Lanthit",
+    "target_day_saleamnt": "0",
+    "target_day_billno": "0",
+    "ytd_previous_saleamnt": "732886986.7600",
+    "ytd_previous_billno": "1016"
+  },
+  {
+    "product_category_name": "10-Home Appliance",
+    "branch_name": "MM-101-/-Lanthit",
+    "target_day_saleamnt": "0",
+    "target_day_billno": "0",
+    "ytd_previous_saleamnt": "3471501863.0400",
+    "ytd_previous_billno": "2969"
+  },
+  {
+    "product_category_name": "04-Sanitary Ware",
+    "branch_name": "MM-102-/-Theik Pan",
+    "target_day_saleamnt": "0",
+    "target_day_billno": "0",
+    "ytd_previous_saleamnt": "1597792080.0000",
+    "ytd_previous_billno": "2868"
+  },
+  {
+    "product_category_name": "07-Surface Covering",
+    "branch_name": "MM-103-/-Satsan",
+    "target_day_saleamnt": "0",
+    "target_day_billno": "0",
+    "ytd_previous_saleamnt": "3305244503.9600",
+    "ytd_previous_billno": "4334"
+  },
+  {
+    "product_category_name": "12-Houseware and Kitchen",
+    "branch_name": "MM-103-/-Satsan",
+    "target_day_saleamnt": "0",
+    "target_day_billno": "0",
+    "ytd_previous_saleamnt": "2507074951.4200",
+    "ytd_previous_billno": "14328"
+  },
+  {
+    "product_category_name": "Promotion/Discount",
+    "branch_name": "MM-103-/-Satsan",
+    "target_day_saleamnt": "0",
+    "target_day_billno": "0",
+    "ytd_previous_saleamnt": "-377625320.0000",
+    "ytd_previous_billno": "0"
+  }
+]

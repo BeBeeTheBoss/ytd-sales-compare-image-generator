@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Image Generator</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --brand: #0b2d71;
+      --brand-2: #1d4ed8;
+      --border: #d9e2ef;
+      --ok: #15803d;
+      --err: #dc2626;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top right, #e6eeff 0%, var(--bg) 45%, #eef2ff 100%);
+    }
+
+    .wrap {
+      max-width: 1360px;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(8, 15, 40, 0.06);
+    }
+
+    .left {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 78vh;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    textarea {
+      width: 100%;
+      flex: 1;
+      min-height: 460px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .status { font-size: 13px; }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+
+    .right {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .preview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      background: #f8fbff;
+    }
+
+    .preview-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      min-height: 72vh;
+      overflow: auto;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      height: auto;
+      display: none;
+      border-radius: 8px;
+      border: 1px solid #d6deea;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+      padding: 20px;
+    }
+
+    a { color: #1d4ed8; text-decoration: none; }
+
+    @media (max-width: 1080px) {
+      .wrap { grid-template-columns: 1fr; }
+      .left { min-height: auto; }
+      textarea { min-height: 280px; }
+      .preview-box { min-height: 55vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel left">
+      <h1>JSON Input</h1>
+      <p class="hint">`POST /api/report-image` အတွက် array JSON ကို paste လုပ်ပါ။</p>
+      <textarea id="jsonInput" spellcheck="false"></textarea>
+      <div class="actions">
+        <button id="generateBtn">Generate Image</button>
+        <button id="fillBtn" type="button">Load Sample</button>
+      </div>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section class="panel right">
+      <div class="preview-head">
+        <strong>Output Preview</strong>
+        <a id="openLink" href="#" target="_blank" rel="noreferrer">Open image</a>
+      </div>
+      <div class="preview-box">
+        <img id="previewImg" alt="Generated report" />
+        <div id="empty" class="empty">No image yet. Generate လုပ်ပြီးရင်ဒီနေရာမှာပြပါမယ်။</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const jsonInput = document.getElementById('jsonInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const fillBtn = document.getElementById('fillBtn');
+    const statusEl = document.getElementById('status');
+    const previewImg = document.getElementById('previewImg');
+    const emptyEl = document.getElementById('empty');
+    const openLink = document.getElementById('openLink');
+
+    const SAMPLE = [
+      {
+        product_category_name: '01-Cement and Block',
+        branch_name: 'MM-101-/-Lanthit',
+        ytd_previous_saleamnt: '732886986.7600',
+        ytd_previous_billno: '1016'
+      },
+      {
+        product_category_name: '10-Home Appliance',
+        branch_name: 'MM-101-/-Lanthit',
+        ytd_previous_saleamnt: '3471501863.0400',
+        ytd_previous_billno: '2969'
+      },
+      {
+        product_category_name: '07-Surface Covering',
+        branch_name: 'MM-103-/-Satsan',
+        ytd_previous_saleamnt: '3305244503.9600',
+        ytd_previous_billno: '4334'
+      }
+    ];
+
+    function setStatus(msg, type = 'ok') {
+      statusEl.textContent = msg;
+      statusEl.className = `status ${type === 'err' ? 'err' : 'ok'}`;
+    }
+
+    function setPreview(url) {
+      previewImg.src = url;
+      previewImg.style.display = 'block';
+      emptyEl.style.display = 'none';
+      openLink.href = url;
+    }
+
+    fillBtn.addEventListener('click', () => {
+      jsonInput.value = JSON.stringify(SAMPLE, null, 2);
+      setStatus('Sample JSON loaded', 'ok');
+    });
+
+    generateBtn.addEventListener('click', async () => {
+      generateBtn.disabled = true;
+      setStatus('Generating...', 'ok');
+
+      try {
+        const payload = JSON.parse(jsonInput.value);
+        const res = await fetch('/api/report-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.message || 'Request failed');
+        }
+
+        setPreview(data.image_url);
+        setStatus('Image generated successfully', 'ok');
+      } catch (err) {
+        setStatus(err.message || 'Invalid JSON or request failed', 'err');
+      } finally {
+        generateBtn.disabled = false;
+      }
+    });
+
+    jsonInput.value = JSON.stringify(SAMPLE, null, 2);
+  </script>
+</body>
+</html>
