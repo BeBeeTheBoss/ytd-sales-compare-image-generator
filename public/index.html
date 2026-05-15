@@ -221,19 +221,63 @@
       setStatus('Sample JSON loaded', 'ok');
     });
 
+    function parseRequestPayload(text) {
+      const trimmed = String(text || '').trim();
+      if (!trimmed) {
+        throw new Error('JSON မထည့်ရသေးပါ။ “Load Sample” နှိပ်ပြီး array JSON ယူပါ။');
+      }
+      let payload;
+      try {
+        payload = JSON.parse(trimmed);
+      } catch (e) {
+        if (/^function\s/i.test(trimmed) || trimmed.startsWith('const ') || trimmed.startsWith('let ')) {
+          throw new Error(
+            'ဒါက JavaScript code ဖြစ်နေပါတယ်။ JSON array ပဲ paste လုပ်ပါ (ရွှင်းစင်း braced array: [ { … }, … ])။'
+          );
+        }
+        throw new Error(
+          'Invalid JSON in the text box: ' + (e && e.message ? e.message : String(e)) +
+            '။ အပေါ်က sample array form နဲ့ ကိုက်ညီရပါမယ်။'
+        );
+      }
+      return payload;
+    }
+
     generateBtn.addEventListener('click', async () => {
       generateBtn.disabled = true;
       setStatus('Generating...', 'ok');
 
+      let payload;
       try {
-        const payload = JSON.parse(jsonInput.value);
+        payload = parseRequestPayload(jsonInput.value);
+      } catch (e) {
+        setStatus(e.message || 'Invalid input', 'err');
+        generateBtn.disabled = false;
+        return;
+      }
+
+      try {
         const res = await fetch('/api/report-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
+        const rawText = await res.text();
+        let data;
+        try {
+          data = JSON.parse(rawText);
+        } catch (parseErr) {
+          const preview = rawText.replace(/\s+/g, ' ').slice(0, 120);
+          throw new Error(
+            'Server response was not JSON (HTTP ' +
+              res.status +
+              '). ' +
+              preview +
+              (rawText.length > 120 ? '…' : '')
+          );
+        }
+
         if (!res.ok || !data.ok) {
           throw new Error(data.message || 'Request failed');
         }
@@ -241,7 +285,7 @@
         setPreview(data.image_url);
         setStatus('Image generated successfully', 'ok');
       } catch (err) {
-        setStatus(err.message || 'Invalid JSON or request failed', 'err');
+        setStatus(err.message || 'Request failed', 'err');
       } finally {
         generateBtn.disabled = false;
       }
