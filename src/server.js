@@ -1,6 +1,6 @@
 const path = require("path");
 const express = require("express");
-const { saveDashboardSvg } = require("./dashboardSvg");
+const { saveDashboardPng } = require("./dashboardSvg");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -21,14 +21,14 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "report-image-api" });
 });
 
-app.post("/api/report-image", (req, res) => {
+app.post("/api/report-image", async (req, res) => {
   const { valid, errors } = validateArrayPayload(req.body);
   if (!valid) {
     return res.status(400).json({ ok: false, message: "Invalid payload", errors });
   }
 
   try {
-    const { filename } = saveDashboardSvg(req.body, outputDir);
+    const { filename } = await saveDashboardPng(req.body, outputDir);
     const imageUrl = `${req.protocol}://${req.get("host")}/images/${filename}`;
 
     return res.json({
