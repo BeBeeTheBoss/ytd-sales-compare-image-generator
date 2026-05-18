@@ -633,6 +633,24 @@ const RETAIL_OUTLETS = [
   { id: 14, label: "မင်္ဂလာဒုံ / Mingalardon", lat: 16.982, lon: 96.104, keys: ["မင်္ဂလာဒုံ", "mingaladon", "mingalardon", "mingalardon"] }
 ];
 
+// Fine-tune visual pin positions to better match the rendered map artwork.
+const RETAIL_PIN_OFFSET = {
+  1: { dx: -6, dy: 8 },   // Bago
+  2: { dx: 8, dy: -8 },   // Theikpan
+  3: { dx: -8, dy: -8 },  // Tampawady
+  4: { dx: -14, dy: 16 }, // Mawlamyine
+  5: { dx: 12, dy: -2 },  // Aye Tharyar
+  6: { dx: 8, dy: -10 },  // Nay Pyi Taw
+  7: { dx: 6, dy: 10 },   // Lanthit
+  8: { dx: -10, dy: -2 }, // Satsan
+  9: { dx: 18, dy: 4 },   // East Dagon
+  10: { dx: -12, dy: 10 },// Hlaing Tharyar
+  11: { dx: 10, dy: 14 }, // PRO1 Terminal M
+  12: { dx: 16, dy: 10 }, // South Dagon
+  13: { dx: 0, dy: -10 }, // Danyingone
+  14: { dx: 2, dy: -16 }  // Mingalardon
+};
+
 /** Simplified Myanmar border outline [lon, lat] — ~100 points, clockwise from NW. */
 const MYANMAR_BORDER = [
   [92.55, 28.00], [92.80, 28.20], [93.20, 28.40], [93.70, 28.62], [94.20, 28.55], [94.70, 28.30],
@@ -842,6 +860,9 @@ function getPlacedRetailPins(rows) {
     if (!outlet || seenOutletIds.has(outlet.id)) return;
     seenOutletIds.add(outlet.id);
     let { x, y } = project(outlet.lat, outlet.lon);
+    const adjust = RETAIL_PIN_OFFSET[outlet.id] || { dx: 0, dy: 0 };
+    x += adjust.dx;
+    y += adjust.dy;
 
     const candidates = [
       [0, 0], [0, -14], [0, 14], [14, 0], [-14, 0], [14, -14], [-14, -14], [14, 14], [-14, 14],
@@ -1043,7 +1064,7 @@ function getYtdDayCount() {
   const now = new Date();
   const yearStart = new Date(now.getFullYear(), 0, 1);
   const msPerDay = 24 * 60 * 60 * 1000;
-  const daysSinceYearStart = Math.floor((now - yearStart) / msPerDay - 2);
+  const daysSinceYearStart = Math.floor((now - yearStart) / msPerDay);
   // YTD average is up to yesterday, so Jan 1..yesterday count.
   return Math.max(1, daysSinceYearStart);
 }

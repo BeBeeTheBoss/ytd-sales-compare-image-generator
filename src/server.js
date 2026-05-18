@@ -1,9 +1,10 @@
 const path = require("path");
+const fs = require("fs");
 const express = require("express");
 const { saveDashboardPng } = require("./dashboardSvg");
 
 const app = express();
-const port = Number(process.env.PORT || 3000);
+const port = Number(process.env.PORT || 5000);
 const host = process.env.HOST || "0.0.0.0";
 const rootDir = path.join(__dirname, "..");
 const outputDir = path.join(rootDir, "outputs");
@@ -40,6 +41,68 @@ app.post("/api/report-image", async (req, res) => {
     return res.status(500).json({
       ok: false,
       message: "Failed to generate image",
+      error: error.message
+    });
+  }
+});
+
+app.delete("/api/report-image/:filename", async (req, res) => {
+  const rawName = String(req.params.filename || "").trim();
+  const filename = path.basename(rawName);
+
+  if (!filename || filename !== rawName) {
+    return res.status(400).json({
+      ok: false,
+      message: "Invalid filename"
+    });
+  }
+
+  const targetPath = path.join(outputDir, filename);
+  try {
+    await fs.promises.access(targetPath, fs.constants.F_OK);
+  } catch (_err) {
+    return res.status(404).json({
+      ok: false,
+      message: "Image not found"
+    });
+  }
+
+  try {
+    await fs.promises.unlink(targetPath);
+    return res.json({
+      ok: true,
+      message: "Image deleted",
+      filename
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      message: "Failed to delete image",
+      error: error.message
+    });
+  }
+});
+
+app.delete("/api/report-images", async (_req, res) => {
+  try {
+    const entries = await fs.promises.readdir(outputDir, { withFileTypes: true });
+    const files = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name);
+
+    await Promise.all(
+      files.map((name) => fs.promises.unlink(path.join(outputDir, name)))
+    );
+
+    return res.json({
+      ok: true,
+      message: "All generated images deleted",
+      deleted_count: files.length
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      message: "Failed to delete images",
       error: error.message
     });
   }
