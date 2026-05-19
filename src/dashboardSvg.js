@@ -140,7 +140,16 @@ function buildSummary(rows) {
       return { name, sales, growth };
     })
     .sort((a, b) => b.sales - a.sales);
-  const customers = totalTodayBills;
+  const customerSourceRow = rows.find(
+    (row) =>
+      row &&
+      row.today_customers !== undefined &&
+      row.ytd_avg_customers !== undefined
+  );
+  const customers = customerSourceRow ? toNumber(customerSourceRow.today_customers) : totalTodayBills;
+  const ytdAvgCustomersFromPayload = customerSourceRow
+    ? toNumber(customerSourceRow.ytd_avg_customers) / ytdDayCount
+    : 0;
   const ytdAvgBills = totalBills / ytdDayCount;
   const kyatPerInvoice = totalTodayBills ? totalTodaySales / totalTodayBills : 0;
   const ytdAvgSales = totalSales / ytdDayCount;
@@ -156,11 +165,11 @@ function buildSummary(rows) {
     ytdAvgSales,
     ytdAvgBills,
     ytdAvgTicket,
-    ytdAvgCustomers: ytdAvgBills,
+    ytdAvgCustomers: ytdAvgCustomersFromPayload || ytdAvgBills,
     salesDelta: pct(totalTodaySales, ytdAvgSales),
     billDelta: pct(totalTodayBills, ytdAvgBills),
     avgDelta: pct(kyatPerInvoice, ytdAvgTicket),
-    customerDelta: pct(customers, ytdAvgBills),
+    customerDelta: pct(customers, ytdAvgCustomersFromPayload || ytdAvgBills),
     timeBuckets: {
       today: {
         s8to915: today_8to915,
