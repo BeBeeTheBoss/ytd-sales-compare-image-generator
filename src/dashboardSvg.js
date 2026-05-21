@@ -8,17 +8,29 @@ function generateDashboardSvg(rows, options = {}) {
   const width = 1600;
   const height = 980;
   const rootBgFill = options.transparentBackground ? "transparent" : "#f5f7fb";
+  const lastUpdatedText = formatLastUpdated(new Date());
 
   const summary = buildSummary(rows);
   const topBranches = pickTopAndBottom(summary.branches, (item) => item.growth, 3, 2, (item) => item.growth);
   const topCategories = pickTopAndBottom(summary.categoriesToday, (item) => item.growth, 3, 2, (item) => item.growth);
   const topCategoriesTotal = topCategories.reduce((acc, item) => acc + item.sales, 0);
+  const todayCardX = 20;
+  const todayCardY = 225;
+  const todayCardWidth = 500;
+  const topCardGap = 20;
+  const trendCardX = todayCardX + todayCardWidth + topCardGap;
+  const trendCardWidth = 1580 - trendCardX;
+  const trendBarsX = trendCardX + 80;
+  const trendBarsWidth = trendCardWidth - 105;
+  const trendLegendX = trendCardX + 723;
+  const trendFooterX = trendCardX + 45;
+  const trendFooterWidth = trendCardWidth - 145;
 
   const kpiCards = [
-    metricCard(20, 80, "Total Sales", `${formatM(summary.totalTodaySales)} M MMK`, `${formatM(summary.ytdAvgSales)} M MMK`, summary.salesDelta, "sales"),
-    metricCard(415, 80, "Invoice / Day", formatInt(summary.totalTodayBills), formatInt(summary.ytdAvgBills), summary.billDelta, "invoice"),
-    metricCard(810, 80, "Kyat / Invoice", `${formatInt(summary.kyatPerInvoice)} MMK`, `${formatInt(summary.ytdAvgTicket)} MMK`, summary.avgDelta, "kyat"),
-    metricCard(1205, 80, "No. of Customer", formatInt(summary.customers), formatInt(summary.ytdAvgCustomers), summary.customerDelta, "customer")
+    metricCard(20, 80, "Today's Sales", `${formatM(summary.totalTodaySales)} M MMK`, `${formatM(summary.ytdAvgSales)} M MMK`, summary.salesDelta, "sales"),
+    metricCard(415, 80, "Invoice per Day", formatInt(summary.totalTodayBills), formatInt(summary.ytdAvgBills), summary.billDelta, "invoice"),
+    metricCard(810, 80, "Avg Invoice amt", `${formatInt(summary.kyatPerInvoice)} MMK`, `${formatInt(summary.ytdAvgTicket)} MMK`, summary.avgDelta, "kyat"),
+    metricCard(1205, 80, "No. of Customers", formatInt(summary.customers), formatInt(summary.ytdAvgCustomers), summary.customerDelta, "customer")
   ].join("\n");
 
   const trendSeries = buildTrend(summary);
@@ -27,40 +39,38 @@ function generateDashboardSvg(rows, options = {}) {
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="trendToday" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1f4ea8"/>
-      <stop offset="100%" stop-color="#0f3d92"/>
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#1e40af"/>
     </linearGradient>
     <linearGradient id="trendYtd" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#b8c8e2"/>
-      <stop offset="100%" stop-color="#a5b7d6"/>
+      <stop offset="0%" stop-color="#9fc5ff"/>
+      <stop offset="100%" stop-color="#7fb0f5"/>
     </linearGradient>
   </defs>
   <rect width="${width}" height="${height}" fill="${rootBgFill}"/>
-  <text x="28" y="42" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#111827">Management Monitoring Dashboard</text>
-  <text x="520" y="42" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#6b7280">(9AM - 10AM)</text>
-  <text x="1320" y="40" font-size="22" font-family="Arial, sans-serif" fill="#111827">◷</text>
-  <text x="1570" y="40" text-anchor="end" font-size="22" font-family="Arial, sans-serif" fill="#111827">Last updated ${summary.updatedAt}</text>
+  <text x="28" y="42" font-size="32" font-family="Arial, sans-serif" font-weight="700" fill="#111827">HOURLY SALES TREND (9AM - 10PM)</text>
+  <text x="1572" y="42" text-anchor="end" font-size="19" font-family="Arial, sans-serif" font-weight="700" fill="#475569">${escapeXml(lastUpdatedText)}</text>
 
   ${kpiCards}
-  ${todaySaleCard(summary)}
+  ${todaySaleCard(summary, todayCardX, todayCardY, todayCardWidth)}
 
-  <rect x="415" y="225" rx="16" ry="16" width="1165" height="330" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="415" y="225" rx="16" ry="16" width="1165" height="58" fill="#072860"/>
-  <text x="438" y="263" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#fff">SALES TREND (Today vs YTD Avg Value)</text>
-  ${renderTrendLegend(1268, 510)}
-  ${renderTrendBars(trendSeries, 495, 295, 1060, 158, summary.timeGrowthBySlot)}
-  ${renderTrendFooter(summary, trendSeries, 460, 520)}
+  <rect x="${trendCardX}" y="225" rx="16" ry="16" width="${trendCardWidth}" height="330" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="${trendCardX}" y="225" rx="16" ry="16" width="${trendCardWidth}" height="58" fill="#022162"/>
+  <text x="${trendCardX + 23}" y="263" font-size="26" font-family="Arial, sans-serif" font-weight="700" fill="#fff">SALES TREND (Today vs YTD Avg Value)</text>
+  ${renderTrendLegend(trendLegendX, 302)}
+  ${renderTrendBars(trendSeries, trendBarsX, 295, trendBarsWidth, 158, summary.timeGrowthBySlot)}
+  ${renderTrendFooter(summary, trendSeries, trendFooterX, 520, trendFooterWidth)}
 
-  <rect x="20" y="565" rx="16" ry="16" width="770" height="385" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="20" y="565" rx="16" ry="16" width="770" height="56" fill="#072860"/>
-  <text x="243" y="602" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Sales Performance by Region &amp; Branch</text>
+  <rect x="20" y="565" rx="16" ry="16" width="820" height="385" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="20" y="565" rx="16" ry="16" width="820" height="56" fill="#022162"/>
+  <text x="38" y="602" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#fff">REGION &amp; BRANCH SALES PERFORMANCE </text>
   ${renderRegionBranchSection(summary, topBranches, options)}
 
-  <rect x="810" y="565" rx="16" ry="16" width="770" height="385" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="810" y="565" rx="16" ry="16" width="770" height="56" fill="#072860"/>
-  <text x="825" y="602" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Top &amp; Bottom Performance Category (Growth %)</text>
-  ${renderDonut(topCategories, summary.totalTodaySales, 955, 775, 114)}
-  ${renderCategoryLegend(topCategories, topCategoriesTotal, 1158, 705)}
+  <rect x="860" y="565" rx="16" ry="16" width="720" height="385" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="860" y="565" rx="16" ry="16" width="720" height="56" fill="#022162"/>
+  <text x="875" y="602" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#fff">HIGHEST &amp; LOWEST GROWTH CATEGORIES (GR %)</text>
+  ${renderDonut(topCategories, 1008, 772, 96)}
+  ${renderCategoryLegend(topCategories, topCategoriesTotal, 1222, 700)}
 </svg>`;
 }
 
@@ -192,8 +202,7 @@ function buildSummary(rows) {
     },
     branches,
     categories,
-    categoriesToday,
-    updatedAt: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).toLowerCase()
+    categoriesToday
   };
 }
 
@@ -222,19 +231,19 @@ function kpiIconMarkup(kind) {
 
 function metricCard(x, y, title, value, ytdValue, deltaValue, iconKind) {
   const isNegative = Number(deltaValue) < 0;
-  const deltaColor = isNegative ? "#dc2626" : "#15803d";
+  const deltaColor = isNegative ? "#ef4444" : "#16a34a";
   const arrow = isNegative ? "↘" : "↗";
   const icon = kpiIconMarkup(iconKind);
   return `<rect x="${x}" y="${y}" rx="16" ry="16" width="375" height="130" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="${x + 16}" y="${y + 18}" rx="16" ry="16" width="72" height="72" fill="#0a2f73"/>
+  <rect x="${x + 16}" y="${y + 18}" rx="16" ry="16" width="72" height="72" fill="#0d3fa6"/>
   <g transform="translate(${x + 17},${y + 19})" aria-hidden="true">${icon}</g>
-  <text x="${x + 106}" y="${y + 34}" font-size="16" font-family="Arial, sans-serif" fill="#111827">${escapeXml(title)}</text>
-  <text x="${x + 106}" y="${y + 70}" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(value)}</text>
-  <text x="${x + 106}" y="${y + 90}" font-size="12" font-family="Arial, sans-serif" fill="#64748b">YTD: ${escapeXml(ytdValue)}</text>
-  <text x="${x + 106}" y="${y + 108}" font-size="14" font-family="Arial, sans-serif" fill="${deltaColor}">${arrow} ${formatPct(deltaValue)}%</text>`;
+  <text x="${x + 106}" y="${y + 34}" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(title)}</text>
+  <text x="${x + 106}" y="${y + 72}" font-size="27" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(value)}</text>
+  <text x="${x + 106}" y="${y + 98}" font-size="15" font-family="Arial, sans-serif" font-weight="700" fill="#64748b">YTD: ${escapeXml(ytdValue)}</text>
+  <text x="${x + 106}" y="${y + 122}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="${deltaColor}">${arrow} ${formatPct(deltaValue)}%</text>`;
 }
 
-function todaySaleCard(summary) {
+function todaySaleCard(summary, x = 20, y = 225, width = 375) {
   const today = summary.totalTodaySales;
   const ytd = summary.ytdAvgSales;
   const growth = pct(today, ytd);
@@ -243,17 +252,27 @@ function todaySaleCard(summary) {
   const isPositive = growth >= 0;
   const trendColor = isPositive ? "#22c55e" : "#f87171";
   const trendLabel = isPositive ? "↗ YTD avg value:" : "↘ YTD avg value:";
-  return `<rect x="20" y="225" rx="16" ry="16" width="375" height="330" fill="#072860" stroke="#062150"/>
-  <circle cx="108" cy="315" r="55" fill="none" stroke="#e5e7eb" stroke-width="20"/>
-  <circle cx="108" cy="315" r="55" fill="none" stroke="${trendColor}" stroke-width="20" stroke-dasharray="${(stroke / 100) * 345} 345" transform="rotate(-90 108 315)"/>
-  <text x="108" y="324" text-anchor="middle" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="${trendColor}">${growthText}</text>
-  <text x="182" y="310" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#fff">TODAY SALE</text>
-  <text x="182" y="338" font-size="12" font-family="Arial, sans-serif" fill="#dbeafe">Grand Total vs. YTD</text>
-  <line x1="56" y1="385" x2="356" y2="385" stroke="#8aa2ce"/>
-  <text x="56" y="428" font-size="14" font-family="Arial, sans-serif" fill="#fff">Today:</text>
-  <text x="370" y="428" text-anchor="end" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#fff">${formatM(today)}M MMK</text>
-  <text x="56" y="468" font-size="14" font-family="Arial, sans-serif" fill="${trendColor}">${trendLabel}</text>
-  <text x="370" y="468" text-anchor="end" font-size="22" font-family="Arial, sans-serif" font-weight="700" fill="#fff">${formatM(ytd)}M MMK</text>`;
+  const cx = x + 238;
+  const cy = y + 112;
+  const ringR = 88;
+  const ringStroke = 24;
+  const ringCircumference = 2 * Math.PI * ringR;
+  const rightX = x + width - 25;
+  const separatorX1 = x + 36;
+  const separatorX2 = x + width - 39;
+  const textLeftX = x + 36;
+  return `<rect x="${x}" y="${y}" rx="16" ry="16" width="${width}" height="330" fill="#082a78" stroke="#0f3a9c" filter="url(#cardShadow)"/>
+  <circle cx="${cx}" cy="${cy}" r="${ringR}" fill="none" stroke="#edf2fa" stroke-width="${ringStroke}"/>
+  <circle cx="${cx}" cy="${cy}" r="${ringR}" fill="none" stroke="${trendColor}" stroke-width="${ringStroke}" stroke-linecap="round" stroke-dasharray="${(stroke / 100) * ringCircumference} ${ringCircumference}" transform="rotate(-90 ${cx} ${cy})"/>
+  <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="${trendColor}">${growthText}</text>
+  <text x="${cx}" y="${cy + 34}" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#dbeafe">Grand Total</text>
+  <text x="${cx}" y="${cy + 50}" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#dbeafe">vs. YTD</text>
+  <text x="${x + width - 28}" y="${y + 54}" text-anchor="end" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">TODAY SALE</text>
+  <line x1="${separatorX1}" y1="${y + 220}" x2="${separatorX2}" y2="${y + 220}" stroke="#9ab4e0"/>
+  <text x="${textLeftX}" y="${y + 266}" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#f8fafc">TODAY</text>
+  <text x="${rightX}" y="${y + 266}" text-anchor="end" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${formatM(today)}M MMK</text>
+  <text x="${textLeftX}" y="${y + 304}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#4ade80">YTD AVG VALUE</text>
+  <text x="${rightX}" y="${y + 304}" text-anchor="end" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${formatM(ytd)}M MMK</text>`;
 }
 
 function renderDualBarChart(series, x, y, width, height) {
@@ -275,9 +294,9 @@ function renderDualBarChart(series, x, y, width, height) {
     const y2 = y + height - h2;
     out.push(`<rect x="${baseX}" y="${y1}" width="${barW}" height="${h1}" fill="#032a6b"/>`);
     out.push(`<rect x="${baseX + barW + 6}" y="${y2}" width="${barW}" height="${h2}" fill="#0d4ea6"/>`);
-    out.push(`<text x="${baseX + barW / 2}" y="${y1 - 4}" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" fill="#0f172a">${formatCompact(item.today)}</text>`);
-    out.push(`<text x="${baseX + barW + 6 + barW / 2}" y="${y2 - 4}" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" fill="#334155">${formatCompact(item.ytd)}</text>`);
-    out.push(`<text x="${baseX + slot / 2 - 5}" y="${y + height + 28}" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" fill="#111827">${escapeXml(item.label)}</text>`);
+    out.push(`<text x="${baseX + barW / 2}" y="${y1 - 4}" text-anchor="middle" font-size="13" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a">${formatCompact(item.today)}</text>`);
+    out.push(`<text x="${baseX + barW + 6 + barW / 2}" y="${y2 - 4}" text-anchor="middle" font-size="13" font-family="Arial, sans-serif" font-weight="700" fill="#334155">${formatCompact(item.ytd)}</text>`);
+    out.push(`<text x="${baseX + slot / 2 - 5}" y="${y + height + 28}" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" fill="#111827">${escapeXml(item.label)}</text>`);
   });
 
   return out.join("\n");
@@ -352,28 +371,28 @@ function renderTrendBars(series, x, y, width, height, growthBySlot = {}) {
     const gy = y + (height * i) / 4;
     const yLabel = formatM(yTop - (yTop * i) / 4);
     out.push(`<line x1="${x}" y1="${gy}" x2="${x + width}" y2="${gy}" stroke="#e5e7eb"/>`);
-    out.push(`<text x="${x - 10}" y="${gy + 4}" text-anchor="end" font-size="10.5" font-family="Arial, sans-serif" fill="#374151">${yLabel}M</text>`);
+    out.push(`<text x="${x - 10}" y="${gy + 4}" text-anchor="end" font-size="14.5" font-family="Arial, sans-serif" fill="#374151">${yLabel}M</text>`);
   }
 
   const growthPoints = [];
   series.forEach((s, i) => {
     const cx = x + i * slot + slot / 2;
-    const barW = Math.max(7, Math.min(30, (slot - 20) / 2));
+    const barW = Math.max(12, Math.min(54, (slot - 12) / 2));
     const pairGap = 2;
     const pairW = barW * 2 + pairGap;
     const bx = cx - pairW / 2;
     const h1 = (s.today / yTop) * (height - 15);
     const h2 = (s.ytd / yTop) * (height - 15);
     const baseY = y + height;
-    const midY = baseY - (h1 + h2) / 4;
+    const shorterCenterY = baseY - Math.min(h1, h2) / 2;
     out.push(`<rect x="${bx}" y="${y + height - h1}" width="${barW}" height="${h1}" rx="4" ry="4" fill="url(#trendToday)"/>`);
     out.push(`<rect x="${bx + barW + pairGap}" y="${y + height - h2}" width="${barW}" height="${h2}" rx="4" ry="4" fill="url(#trendYtd)"/>`);
-    out.push(`<text x="${bx + barW / 2}" y="${y + height - h1 - 6}" text-anchor="middle" font-size="10" font-family="Arial, sans-serif" font-weight="700" fill="#374151">${formatM(s.today)}M</text>`);
-    out.push(`<text x="${bx + barW + pairGap + barW / 2}" y="${y + height - h2 - 6}" text-anchor="middle" font-size="10" font-family="Arial, sans-serif" font-weight="700" fill="#6b7280">${formatM(s.ytd)}M</text>`);
-    out.push(`<text x="${cx}" y="${y + height + 32}" text-anchor="middle" font-size="13" font-family="Arial, sans-serif" fill="#111827">${s.time}</text>`);
+    out.push(`<text x="${bx + barW / 2}" y="${y + height - h1 - 6}" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#374151">${formatM(s.today)}M</text>`);
+    out.push(`<text x="${bx + barW + pairGap + barW / 2}" y="${y + height - h2 - 6}" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#6b7280">${formatM(s.ytd)}M</text>`);
+    out.push(`<text x="${cx}" y="${y + height + 32}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">${s.time}</text>`);
     const g = Number(growthBySlot[s.time]);
     if (Number.isFinite(g)) {
-      growthPoints.push({ x: cx, y: midY, g });
+      growthPoints.push({ x: cx, y: shorterCenterY, g });
     }
   });
 
@@ -382,16 +401,16 @@ function renderTrendBars(series, x, y, width, height, growthBySlot = {}) {
     out.push(`<path d="${d}" fill="none" stroke="#5f6f8f" stroke-width="1.8" stroke-dasharray="2 3" stroke-linecap="round"/>`);
     growthPoints.forEach((p) => {
       const gText = `${p.g > 0 ? "+" : ""}${p.g.toFixed(1)}%`;
-      const gColor = p.g >= 0 ? "#15803d" : "#dc2626";
+      const gColor = p.g >= 0 ? "#16a34a" : "#ef4444";
       out.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.2" fill="#4d5f82" stroke="#ffffff" stroke-width="1"/>`);
-      out.push(`<text x="${p.x.toFixed(1)}" y="${(p.y - 9).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="Arial, sans-serif" font-weight="700" fill="${gColor}" stroke="#ffffff" stroke-width="2.2" paint-order="stroke fill">${gText}</text>`);
+      out.push(`<text x="${p.x.toFixed(1)}" y="${(p.y - 9).toFixed(1)}" text-anchor="middle" font-size="14.5" font-family="Arial, sans-serif" font-weight="700" fill="${gColor}" stroke="#ffffff" stroke-width="2.2" paint-order="stroke fill">${gText}</text>`);
     });
   }
 
   out.push(`<line x1="${x + width + 6}" y1="${y}" x2="${x + width + 6}" y2="${y + height}" stroke="#9ca3af"/>`);
-  out.push(`<text x="${x + width + 12}" y="${y + 4}" font-size="10.5" font-family="Arial, sans-serif" fill="#475569">${Math.round(gMax)}%</text>`);
-  out.push(`<text x="${x + width + 12}" y="${y + height / 2 + 4}" font-size="10.5" font-family="Arial, sans-serif" fill="#475569">${Math.round((gMax + gMin) / 2)}%</text>`);
-  out.push(`<text x="${x + width + 12}" y="${y + height + 4}" font-size="10.5" font-family="Arial, sans-serif" fill="#475569">${Math.round(gMin)}%</text>`);
+  out.push(`<text x="${x + width + 12}" y="${y + 4}" font-size="14.5" font-family="Arial, sans-serif" fill="#475569">${Math.round(gMax)}%</text>`);
+  out.push(`<text x="${x + width + 12}" y="${y + height / 2 + 4}" font-size="14.5" font-family="Arial, sans-serif" fill="#475569">${Math.round((gMax + gMin) / 2)}%</text>`);
+  out.push(`<text x="${x + width + 12}" y="${y + height + 4}" font-size="14.5" font-family="Arial, sans-serif" fill="#475569">${Math.round(gMin)}%</text>`);
 
   return out.join("\n");
 }
@@ -399,16 +418,16 @@ function renderTrendBars(series, x, y, width, height, growthBySlot = {}) {
 function renderTrendLegend(x, y) {
   return `
     <rect x="${x}" y="${y}" width="12" height="12" rx="2" ry="2" fill="url(#trendToday)"/>
-    <text x="${x + 18}" y="${y + 10.5}" font-size="11" font-family="Arial, sans-serif" fill="#1f2937">Today</text>
+    <text x="${x + 18}" y="${y + 10.5}" font-size="15" font-family="Arial, sans-serif" fill="#1f2937">Today</text>
     <rect x="${x + 80}" y="${y}" width="12" height="12" rx="2" ry="2" fill="url(#trendYtd)"/>
-    <text x="${x + 98}" y="${y + 10.5}" font-size="11" font-family="Arial, sans-serif" fill="#1f2937">YTD Avg</text>
+    <text x="${x + 98}" y="${y + 10.5}" font-size="15" font-family="Arial, sans-serif" fill="#1f2937">YTD Avg</text>
     <line x1="${x + 178}" y1="${y + 6}" x2="${x + 202}" y2="${y + 6}" stroke="#5f6f8f" stroke-width="1.6" stroke-dasharray="2 3" stroke-linecap="round"/>
     <circle cx="${x + 190}" cy="${y + 6}" r="2.8" fill="#4d5f82" stroke="#ffffff" stroke-width="1"/>
-    <text x="${x + 210}" y="${y + 10.5}" font-size="11" font-family="Arial, sans-serif" fill="#1f2937">Growth %</text>
+    <text x="${x + 210}" y="${y + 10.5}" font-size="15" font-family="Arial, sans-serif" fill="#1f2937">GR %</text>
   `;
 }
 
-function renderTrendFooter(summary, series, x, y) {
+function renderTrendFooter(summary, series, x, y, width = 1020) {
   const tb = summary.timeBuckets || {};
   const t = tb.today || {};
   const ytdSlots = tb.ytd || {};
@@ -428,132 +447,226 @@ function renderTrendFooter(summary, series, x, y) {
   const ytdBase = ytdWindowAvg || (Number(summary.ytdAvgSales) || 0);
   const variance = todayBase - ytdBase;
   const growth = pct(todayBase, ytdBase);
-  const varianceColor = variance >= 0 ? "#15803d" : "#dc2626";
-  const growthColor = growth >= 0 ? "#15803d" : "#dc2626";
+  const varianceColor = variance >= 0 ? "#16a34a" : "#ef4444";
+  const growthColor = growth >= 0 ? "#16a34a" : "#ef4444";
   const growthText = `${growth >= 0 ? "+" : "-"}${Math.abs(growth).toFixed(1)}%`;
   const varianceText = `${variance >= 0 ? "+" : "-"}${formatM(Math.abs(variance))}M`;
   const topY = y - 8;
-  const col2 = x + 205;
-  const col3 = x + 400;
-  const col4 = x + 545;
+  const colWidth = width / 4;
+  const col1 = x + colWidth * 0.5;
+  const col2 = x + colWidth * 1.5;
+  const col3 = x + colWidth * 2.5;
+  const col4 = x + colWidth * 3.5;
   return `
-    <text x="${x}" y="${topY}" font-size="12.5" font-family="Arial, sans-serif" fill="#111827">Total Today Sales</text>
-    <text x="${x}" y="${topY + 22}" font-size="13.5" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(todayBase)}M</text>
-    <text x="${col2}" y="${topY}" font-size="12.5" font-family="Arial, sans-serif" fill="#111827">YTD Avg Value (Same Time)</text>
-    <text x="${col2}" y="${topY + 22}" font-size="13.5" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(ytdBase)}M</text>
-    <text x="${col3}" y="${topY}" font-size="12.5" font-family="Arial, sans-serif" fill="#111827">Variance</text>
-    <text x="${col3}" y="${topY + 22}" font-size="13.5" font-family="Arial, sans-serif" font-weight="700" fill="${varianceColor}">${varianceText}</text>
-    <text x="${col4}" y="${topY}" font-size="12.5" font-family="Arial, sans-serif" fill="#111827">Growth %</text>
-    <text x="${col4}" y="${topY + 22}" font-size="13.5" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
+    <text x="${col1}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Early Bird Sales</text>
+    <text x="${col1}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(todayBase)}M MMK</text>
+    <text x="${col2}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">YTD Avg Value (Same Time)</text>
+    <text x="${col2}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(ytdBase)}M MMK</text>
+    <text x="${col3}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Variance</text>
+    <text x="${col3}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="${varianceColor}">${varianceText} MMK</text>
+    <text x="${col4}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">GR %</text>
+    <text x="${col4}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
   `;
 }
 
 function renderBranchTable(rows, totalSales) {
   const y = 700;
   const out = [
-    '<rect x="360" y="640" width="420" height="30" fill="#072860"/>',
-    '<text x="380" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Location</text>',
-    '<text x="520" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Today</text>',
-    '<text x="615" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Growth</text>',
-    '<text x="690" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Top Category</text>'
+    '<rect x="360" y="640" width="420" height="30" fill="#022162"/>',
+    '<text x="380" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">Branch</text>',
+    '<text x="520" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">Today</text>',
+    '<text x="615" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">GR %</text>',
+    '<text x="690" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">Top Category</text>'
   ];
 
   rows.forEach((r, i) => {
     const yy = y + i * 46;
     const growth = pct(r.sales, totalSales / rows.length);
-    out.push(`<text x="380" y="${yy}" font-size="12" font-family="Arial, sans-serif" fill="#111827">${escapeXml(shortBranch(r.name))}</text>`);
-    out.push(`<text x="520" y="${yy}" font-size="12" font-family="Arial, sans-serif" fill="#111827">${formatM(r.sales)} M MMK</text>`);
-    out.push(`<text x="615" y="${yy}" font-size="12" font-family="Arial, sans-serif" fill="${growth >= 0 ? "#15803d" : "#dc2626"}">${growth > 0 ? "+" : ""}${growth}%</text>`);
-    out.push('<text x="705" y="' + yy + '" font-size="12" font-family="Arial, sans-serif" fill="#111827">Mixed</text>');
+    out.push(`<text x="380" y="${yy}" font-size="16" font-family="Arial, sans-serif" fill="#111827">${escapeXml(shortBranch(r.name))}</text>`);
+    out.push(`<text x="520" y="${yy}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(r.sales)} M MMK</text>`);
+    out.push(`<text x="615" y="${yy}" font-size="16" font-family="Arial, sans-serif" fill="${growth >= 0 ? "#16a34a" : "#ef4444"}">${growth > 0 ? "+" : ""}${growth}%</text>`);
+    out.push('<text x="705" y="' + yy + '" font-size="16" font-family="Arial, sans-serif" fill="#111827">Mixed</text>');
   });
 
   return out.join("\n");
 }
 
 function renderRegionBranchSection(summary, rows, options = {}) {
-  const mapPanelFill = options && options.mapRenderMode === "none" ? "transparent" : "#eef4fb";
-  const mapPanelStroke = options && options.mapRenderMode === "none" ? "none" : "#dbe2ef";
-  const list = rows.map((r, idx) => {
-    const y = 706 + idx * 41;
-    const growthColor = r.growth >= 0 ? "#15803d" : "#dc2626";
+  const regionRows = buildRegionRows(summary.branches)
+    .slice()
+    .sort((a, b) => (Number(b.growth) || 0) - (Number(a.growth) || 0));
+  const branchRows = rows;
+  const regionTotalToday = regionRows.reduce((sum, row) => sum + (Number(row.today) || 0), 0);
+  const regionTotalSales = regionRows.reduce((sum, row) => sum + (Number(row.sales) || 0), 0);
+  const regionTotalGrowth = pct(regionTotalToday, regionTotalSales / Math.max(1, getYtdDayCount()));
+  const regionTotalGrowthColor = regionTotalGrowth >= 0 ? "#16a34a" : "#ef4444";
+  const regionTotalGrowthText = `${regionTotalGrowth > 0 ? "+" : ""}${regionTotalGrowth}%`;
+  const regionHeaderX = 40;
+  const regionHeaderW = 380;
+  const branchHeaderX = 442;
+  const branchHeaderW = 380;
+  const regionList = regionRows.map((r, idx) => {
+    const y = 706 + idx * 34;
+    const growthColor = r.growth >= 0 ? "#16a34a" : "#ef4444";
     const growthText = `${r.growth > 0 ? "+" : ""}${r.growth}%`;
-    const branchShort = limitText(shortBranch(r.name), 21);
+    const topCategory = limitText(shortCategory(r.topCategory || "Mixed"), 14);
+    return `
+      <text x="48" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(r.name)}</text>
+      <text x="160" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${formatM(r.today)}M</text>
+      <text x="230" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
+      <text x="316" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(topCategory)}</text>
+    `;
+  }).join("");
+
+  const branchList = branchRows.map((r, idx) => {
+    const y = 706 + idx * 44;
+    const growthColor = r.growth >= 0 ? "#16a34a" : "#ef4444";
+    const growthText = `${r.growth > 0 ? "+" : ""}${r.growth}%`;
+    const branchShort = limitText(shortBranch(r.name), 21).split('/')[1].replace('-','');
     const catShort = limitText(shortCategory(r.topCategory || "Mixed"), 17);
     return `
-      <text x="350" y="${y}" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">${escapeXml(branchShort)}</text>
-      <text x="500" y="${y}" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">${formatM(r.today)}M</text>
-      <text x="592" y="${y}" font-size="12" font-family="Arial, sans-serif" fill="${growthColor}">${growthText}</text>
-      <text x="680" y="${y}" font-size="12" font-family="Arial, sans-serif" fill="#1f2937">${escapeXml(catShort)}</text>
+      <text x="454" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(branchShort)}</text>
+      <text x="567" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${formatM(r.today)}M</text>
+      <text x="630" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
+      <text x="700" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(catShort)}</text>
     `;
   }).join("");
 
   const growthTotal = pct(summary.totalTodaySales, summary.ytdAvgSales);
-  const growthTotalColor = growthTotal >= 0 ? "#15803d" : "#dc2626";
+  const growthTotalColor = growthTotal >= 0 ? "#16a34a" : "#ef4444";
   const growthTotalText = `${growthTotal > 0 ? "+" : ""}${growthTotal}%`;
 
   return `
-    <rect x="30" y="638" width="258" height="302" rx="8" ry="8" fill="${mapPanelFill}" stroke="${mapPanelStroke}"/>
-    ${getMyanmarMapMarkup(options)}
-    ${options && options.mapRenderMode === "none" ? "" : renderRetailOutletPins(rows)}
-    ${list}
-    <rect x="340" y="640" width="440" height="30" fill="#072860"/>
-    <text x="350" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Location</text>
-    <text x="500" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Today</text>
-    <text x="592" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Growth</text>
-    <text x="680" y="660" font-size="12" font-family="Arial, sans-serif" fill="#fff">Top Category</text>
+    <rect x="${regionHeaderX}" y="640" width="${regionHeaderW}" height="30" fill="#022162"/>
+    <text x="48" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Region</text>
+    <text x="160" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Today</text>
+    <text x="230" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">GR %</text>
+    <text x="316" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Top Category</text>
+    ${regionList}
 
-    <rect x="340" y="884" width="440" height="48" fill="#0b1d57"/>
-    <text x="350" y="913" font-size="12" font-family="Arial, sans-serif" fill="#fff">Grand Total</text>
-    <text x="500" y="913" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#fff">${formatM(summary.totalTodaySales)} M</text>
-    <text x="592" y="913" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="${growthTotalColor}">${growthTotalText}</text>
-    <text x="680" y="913" font-size="12" font-family="Arial, sans-serif" fill="#fff">All categories</text>
+    <rect x="${branchHeaderX}" y="640" width="${branchHeaderW}" height="30" fill="#022162"/>
+    <text x="454" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Branch</text>
+    <text x="567" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Today</text>
+    <text x="630" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">GR %</text>
+    <text x="698" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Top Category</text>
+    ${branchList}
+
+    <rect x="${regionHeaderX}" y="892" width="${regionHeaderW}" height="48" fill="#0b1d57"/>
+    <text x="48" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Grand Total</text>
+    <text x="150" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">${formatM(regionTotalToday)} M</text>
+    <text x="230" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="${regionTotalGrowthColor}">${regionTotalGrowthText}</text>
+    <text x="316" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">All Categories</text>
+
+    <rect x="${branchHeaderX}" y="892" width="${branchHeaderW}" height="48" fill="#0b1d57"/>
+    <text x="454" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Grand Total</text>
+    <text x="560" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">${formatM(summary.totalTodaySales)} M</text>
+    <text x="627" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="${growthTotalColor}">${growthTotalText}</text>
+    <text x="698" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">All categories</text>
   `;
 }
 
-function renderDonut(items, totalSales, cx, cy, r) {
+function buildRegionRows(branches) {
+  const ytdDayCount = getYtdDayCount();
+  const byCode = new Map(
+    (branches || []).map((b) => [extractBranchCode(b.name), b])
+  );
+  const regionDefs = [
+    { name: "Yangon", codes: ["MM-101", "MM-103", "MM-104", "MM-107", "MM-109", "MM-112", "MM-114", "MM-113"] },
+    { name: "Mandalay", codes: ["MM-106", "MM-102"] },
+    { name: "Nay Pyi Taw", codes: ["MM-115"] },
+    { name: "Shan State", codes: ["MM-108"] },
+    { name: "Mawlamyine", codes: ["MM-105"] },
+    { name: "Bago", codes: ["MM-110"] }
+  ];
+
+  return regionDefs.map((region) => {
+    let today = 0;
+    let sales = 0;
+    const catTotals = new Map();
+
+    region.codes.forEach((code) => {
+      const row = byCode.get(code);
+      if (!row) return;
+      today += Number(row.today) || 0;
+      sales += Number(row.sales) || 0;
+      const cat = shortCategory(row.topCategory || "Mixed");
+      catTotals.set(cat, (catTotals.get(cat) || 0) + (Number(row.today) || 0));
+    });
+
+    let topCategory = "Mixed";
+    let topCategoryValue = -1;
+    for (const [name, value] of catTotals.entries()) {
+      if (value > topCategoryValue) {
+        topCategory = name;
+        topCategoryValue = value;
+      }
+    }
+
+    return {
+      name: region.name,
+      today,
+      sales,
+      growth: pct(today, sales / ytdDayCount),
+      topCategory
+    };
+  });
+}
+
+function extractBranchCode(branchName) {
+  const raw = String(branchName || "").trim().toUpperCase();
+  const match = raw.match(/MM-\d+/);
+  if (match) return match[0];
+  return raw.replace(/-+$/, "");
+}
+
+function renderDonut(items, cx, cy, r) {
   const total = items.reduce((a, b) => a + b.sales, 0) || 1;
   const colors = getDonutColors(items.length);
   let offset = 0;
   const circle = 2 * Math.PI * r;
+  const minLabelX = cx - r - 24;
+  const maxLabelX = cx + r + 24;
 
-  const arcs = items.map((item, idx) => {
+  const parts = items.map((item, idx) => {
     const frac = item.sales / total;
     const len = frac * circle;
     const mid = offset + len / 2;
     const angle = -Math.PI / 2 + (mid / circle) * 2 * Math.PI;
     const rawX = cx + Math.cos(angle) * (r + 13);
     const ly = cy + Math.sin(angle) * (r + 18);
-    const lx = Math.max(822, Math.min(1118, rawX));
+    const lx = Math.max(minLabelX, Math.min(maxLabelX, rawX));
+    const percent = Math.round(frac * 100);
     const textAnchor = rawX >= 1110 ? "end" : rawX <= 830 ? "start" : (Math.cos(angle) > 0.15 ? "start" : Math.cos(angle) < -0.15 ? "end" : "middle");
     const arc = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[idx]}" stroke-width="42" stroke-dasharray="${len} ${circle - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
-    const label = `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${textAnchor}" font-size="10" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a" stroke="#ffffff" stroke-width="2.4" paint-order="stroke fill">${formatM(item.sales)}M</text>`;
+    const label = `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${textAnchor}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a" stroke="#ffffff" stroke-width="2.4" paint-order="stroke fill">${formatM(item.sales)}M (${percent}%)</text>`;
     offset += len;
-    return `${arc}${label}`;
-  }).join("\n");
+    return { arc, label };
+  });
+  const arcs = parts.map((p) => p.arc).join("\n");
+  const labels = parts.map((p) => p.label).join("\n");
 
   return `${arcs}
-  <circle cx="${cx}" cy="${cy}" r="74" fill="#fff"/>
-  <text x="${cx}" y="${cy - 16}" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" fill="#4b5563">Total Sales</text>
-  <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(totalSales)} M</text>
-  <text x="${cx}" y="${cy + 44}" text-anchor="middle" font-size="15" font-family="Arial, sans-serif" fill="#4b5563">MMK</text>`;
+  <circle cx="${cx}" cy="${cy}" r="${Math.max(60, r - 22)}" fill="#fff"/>
+  ${labels}
+  <text x="${cx}" y="${cy + 6}" text-anchor="middle" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#4b5563">Today's Sales</text>`;
 }
 
 function renderCategoryLegend(items, totalSales, x, y) {
   const colors = getDonutColors(items.length);
   const header = `
-    <text x="${x + 12}" y="${y - 18}" font-size="12" font-family="Arial, sans-serif" fill="#374151">Category</text>
-    <text x="1490" y="${y - 18}" text-anchor="end" font-size="12" font-family="Arial, sans-serif" fill="#374151">Sales</text>
-    <text x="1550" y="${y - 18}" text-anchor="end" font-size="12" font-family="Arial, sans-serif" fill="#374151">Growth</text>
+    <text x="${x + 12}" y="${y - 18}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#374151">Category</text>
+    <text x="1440" y="${y - 18}" text-anchor="end" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#374151">Sales</text>
+    <text x="1560" y="${y - 18}" text-anchor="end" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#374151">GR %</text>
   `;
   const rows = items.map((item, idx) => {
     const growth = item.growth || 0;
-    const growthColor = growth >= 0 ? "#15803d" : "#dc2626";
+    const growthColor = growth >= 0 ? "#16a34a" : "#ef4444";
     const growthText = `${growth > 0 ? "+" : ""}${growth}%`;
-    const rowY = y + idx * 42;
-    return `<circle cx="${x}" cy="${y + idx * 42}" r="8" fill="${colors[idx % colors.length]}"/>
-      <text x="${x + 22}" y="${rowY + 8}" font-size="12" font-family="Arial, sans-serif" fill="#111827">${escapeXml(limitText(shortCategory(item.name), 22))}</text>
-      <text x="1490" y="${rowY + 8}" text-anchor="end" font-size="12" font-family="Arial, sans-serif" fill="#111827">${formatM(item.sales)}M</text>
-      <text x="1550" y="${rowY + 8}" text-anchor="end" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>`;
+    const rowY = y + idx * 46;
+    return `<circle cx="${x}" cy="${y + idx * 46}" r="8" fill="${colors[idx % colors.length]}"/>
+      <text x="${x + 22}" y="${rowY + 8}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(limitText(shortCategory(item.name), 18))}</text>
+      <text x="1440" y="${rowY + 8}" text-anchor="end" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(item.sales)}M</text>
+      <text x="1560" y="${rowY + 8}" text-anchor="end" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>`;
   }).join("\n");
   return `${header}\n${rows}`;
 }
@@ -854,7 +967,7 @@ function mapRetailPinMarker(mx, my, salesValue) {
   return `<g transform="translate(${mx.toFixed(1)},${my.toFixed(1)})">
     <circle cx="0" cy="0" r="4.2" fill="#11245d"/>
     <rect x="8" y="-8" rx="4" ry="4" width="${boxW.toFixed(1)}" height="16" fill="#11245d"/>
-    <text x="${(8 + boxW / 2).toFixed(1)}" y="3.5" text-anchor="middle" font-size="9" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${valueText}</text>
+    <text x="${(8 + boxW / 2).toFixed(1)}" y="3.5" text-anchor="middle" font-size="13" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${valueText}</text>
   </g>`;
 }
 
@@ -980,7 +1093,7 @@ function getMyanmarMapMarkup(options = {}) {
     const cx = px(c.lon).toFixed(1);
     const cy = py(c.lat).toFixed(1);
     return `<circle cx="${cx}" cy="${cy}" r="2" fill="#4a6280" opacity="0.55"/>
-      <text x="${(Number(cx) + 5).toFixed(1)}" y="${(Number(cy) + 3).toFixed(1)}" font-size="7" font-family="Arial, sans-serif" fill="#4a6280" opacity="0.65">${c.label}</text>`;
+      <text x="${(Number(cx) + 5).toFixed(1)}" y="${(Number(cy) + 3).toFixed(1)}" font-size="11" font-family="Arial, sans-serif" fill="#4a6280" opacity="0.65">${c.label}</text>`;
   }).join("\n");
 
   return `
@@ -1054,11 +1167,24 @@ function pctFromTotals(today, ytdTotal) {
 function formatM(value) {
   const inMillions = Number(value) / 1000000;
   const rounded = Math.round(inMillions);
-  return String(rounded);
+  return rounded.toLocaleString("en-US");
 }
 
 function formatInt(value) {
   return Math.round(value).toLocaleString("en-US");
+}
+
+function formatLastUpdated(date) {
+  const dt = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Yangon" }));
+  const day = String(dt.getDate()).padStart(2, "0");
+  const month = String(dt.getMonth() + 1).padStart(2, "0");
+  const year = dt.getFullYear();
+  let hour = dt.getHours();
+  const minute = String(dt.getMinutes()).padStart(2, "0");
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  const hour12 = String(hour).padStart(2, "0");
+  return `Last Updated: ${day}-${month}-${year} ${hour12}:${minute} ${ampm}`;
 }
 
 function formatCompact(value) {
@@ -1109,8 +1235,6 @@ function saveDashboardSvg(rows, outputDir) {
 }
 
 async function saveDashboardPng(rows, outputDir) {
-  // For PNG output, draw the real Myanmar map directly on canvas first,
-  // then render the SVG overlays (pins/table/text) above it.
   const svg = generateDashboardSvg(rows, {
     mapRenderMode: "none",
     transparentBackground: true
@@ -1121,16 +1245,12 @@ async function saveDashboardPng(rows, outputDir) {
 
   const width = 1600;
   const height = 980;
-  const summary = buildSummary(rows);
-  const topBranches = pickTopAndBottom(summary.branches, (item) => item.growth, 3, 2, (item) => item.growth);
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
   ctx.fillStyle = "#f5f7fb";
   ctx.fillRect(0, 0, width, height);
   const image = await loadImage(`data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`);
   ctx.drawImage(image, 0, 0, width, height);
-  await drawRealMyanmarMapOnCanvas(ctx);
-  drawRetailPinsOnCanvas(ctx, topBranches);
   fs.writeFileSync(filepath, canvas.toBuffer("image/png"));
   return { filename, filepath };
 }
