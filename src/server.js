@@ -128,12 +128,14 @@ function validateArrayPayload(payload) {
       errors.push(`row[${idx}].branch_name must be a string`);
     }
 
-    if (Number.isNaN(Number(row.ytd_previous_saleamnt))) {
-      errors.push(`row[${idx}].ytd_previous_saleamnt must be numeric string/number`);
+    const sale = row.mtd_previous_saleamnt ?? row.ytd_previous_saleamnt;
+    if (Number.isNaN(Number(sale))) {
+      errors.push(`row[${idx}] requires numeric mtd_previous_saleamnt (or ytd_previous_saleamnt)`);
     }
 
-    if (Number.isNaN(Number(row.ytd_previous_billno))) {
-      errors.push(`row[${idx}].ytd_previous_billno must be numeric string/number`);
+    const bill = row.mtd_previous_billno ?? row.ytd_previous_billno;
+    if (Number.isNaN(Number(bill))) {
+      errors.push(`row[${idx}] requires numeric mtd_previous_billno (or ytd_previous_billno)`);
     }
   });
 

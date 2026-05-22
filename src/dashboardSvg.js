@@ -4,33 +4,66 @@ const crypto = require("crypto");
 const { PNG } = require("pngjs");
 const { createCanvas, loadImage } = require("canvas");
 
+const THEME_PRIMARY = "#04256f";
+const THEME_PRIMARY_DARK = "#031d59";
+const THEME_PRIMARY_LIGHT = "#2f5fb8";
+const THEME_PRIMARY_PALE = "#8fb1ea";
+const THEME_NEGATIVE_RED = "#ff0000ff";
+
+// Category display rename map (key: original category name without numeric prefix, value: new label)
+// Example:
+// "Cement and Block": "Cement",
+// "Roofing/Ceiling/Wall": "Roofing"
+const CATEGORY_RENAME_MAP = {
+  "Cement and Block": "Cement",
+  "Steel": "Steel",
+  "Roofing/Ceiling/Wall": "Roofing",
+  "Sanitary Ware": "Sanitary",
+  "Garden and Accessories": "Garden",
+  "Hardware and Tools": "Tools",
+  "Surface Covering": "Surface",
+  "Door/Window/Wood": "Door",
+  "Electrical and Accessories": "Electrical",
+  "Home Appliance": "Home App",
+  "Paint and Chemical": "Paint",
+  "Houseware and Kitchen": "Houseware",
+  "Furniture and Bedding": "Furniture",
+  "Stationery & Digital Equipment": "Stationery",
+  "Office Use": "Office",
+  "Promotion/Discount": "Promotion",
+  "Promotion/Sector": "Promotion",
+  "Mixed": "Mixed"
+};
+
 function generateDashboardSvg(rows, options = {}) {
   const width = 1600;
-  const height = 980;
+  const height = 1120;
   const rootBgFill = options.transparentBackground ? "transparent" : "#f5f7fb";
   const lastUpdatedText = formatLastUpdated(new Date());
 
   const summary = buildSummary(rows);
   const topBranches = pickTopAndBottom(summary.branches, (item) => item.growth, 3, 2, (item) => item.growth);
-  const topCategories = pickTopAndBottom(summary.categoriesToday, (item) => item.growth, 3, 2, (item) => item.growth);
+  const topCategories = summary.categoriesToday.slice(0, 5);
   const topCategoriesTotal = topCategories.reduce((acc, item) => acc + item.sales, 0);
   const todayCardX = 20;
-  const todayCardY = 225;
-  const todayCardWidth = 500;
-  const topCardGap = 20;
+  const todayCardY = 270;
+  const todayCardWidth = 460;
+  const topCardGap = 16;
   const trendCardX = todayCardX + todayCardWidth + topCardGap;
+  const trendCardY = todayCardY;
   const trendCardWidth = 1580 - trendCardX;
   const trendBarsX = trendCardX + 80;
   const trendBarsWidth = trendCardWidth - 105;
   const trendLegendX = trendCardX + 723;
   const trendFooterX = trendCardX + 45;
   const trendFooterWidth = trendCardWidth - 145;
+  const lowerSectionY = todayCardY + 410;
 
   const kpiCards = [
-    metricCard(20, 80, "Today's Sales", `${formatM(summary.totalTodaySales)} M MMK`, `${formatM(summary.ytdAvgSales)} M MMK`, summary.salesDelta, "sales"),
-    metricCard(415, 80, "Invoice per Day", formatInt(summary.totalTodayBills), formatInt(summary.ytdAvgBills), summary.billDelta, "invoice"),
-    metricCard(810, 80, "Avg Invoice amt", `${formatInt(summary.kyatPerInvoice)} MMK`, `${formatInt(summary.ytdAvgTicket)} MMK`, summary.avgDelta, "kyat"),
-    metricCard(1205, 80, "No. of Customers", formatInt(summary.customers), formatInt(summary.ytdAvgCustomers), summary.customerDelta, "customer")
+    metricCard(20, 70, "Today's Sales", `${formatM(summary.totalTodaySales)} M MMK`, `${formatM(summary.mtdAvgSales)} M MMK`, summary.salesDelta, "sales"),
+    metricCard(415, 70, "Invoice per Day", formatInt(summary.totalTodayBills), formatInt(summary.mtdAvgBills), summary.billDelta, "invoice"),
+    metricCard(810, 70, "Avg. Invoice amt", `${formatInt(summary.kyatPerInvoice)} MMK`, `${formatInt(summary.mtdAvgTicket)} MMK`, summary.avgDelta, "kyat"),  
+    metricCard(1205, 70, "No. of Customers", formatInt(summary.customers), formatInt(summary.mtdAvgCustomers), summary.customerDelta, "customer")
   ].join("\n");
 
   const trendSeries = buildTrend(summary);
@@ -39,38 +72,38 @@ function generateDashboardSvg(rows, options = {}) {
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="trendToday" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1d4ed8"/>
-      <stop offset="100%" stop-color="#1e40af"/>
+      <stop offset="0%" stop-color="${THEME_PRIMARY_LIGHT}"/>
+      <stop offset="100%" stop-color="${THEME_PRIMARY}"/>
     </linearGradient>
     <linearGradient id="trendYtd" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#9fc5ff"/>
-      <stop offset="100%" stop-color="#7fb0f5"/>
+      <stop offset="0%" stop-color="${THEME_PRIMARY_PALE}"/>
+      <stop offset="100%" stop-color="#6f95d8"/>
     </linearGradient>
   </defs>
   <rect width="${width}" height="${height}" fill="${rootBgFill}"/>
-  <text x="28" y="42" font-size="32" font-family="Arial, sans-serif" font-weight="700" fill="#111827">HOURLY SALES TREND (9AM - 10PM)</text>
+  <text x="28" y="52" font-size="50" font-family="Gill Sans Extrabold" font-weight="1000" fill="#111827">HOURLY SALES TREND (9AM. - 10AM.)</text>
   <text x="1572" y="42" text-anchor="end" font-size="19" font-family="Arial, sans-serif" font-weight="700" fill="#475569">${escapeXml(lastUpdatedText)}</text>
 
   ${kpiCards}
   ${todaySaleCard(summary, todayCardX, todayCardY, todayCardWidth)}
 
-  <rect x="${trendCardX}" y="225" rx="16" ry="16" width="${trendCardWidth}" height="330" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="${trendCardX}" y="225" rx="16" ry="16" width="${trendCardWidth}" height="58" fill="#022162"/>
-  <text x="${trendCardX + 23}" y="263" font-size="26" font-family="Arial, sans-serif" font-weight="700" fill="#fff">SALES TREND (Today vs YTD Avg Value)</text>
-  ${renderTrendLegend(trendLegendX, 302)}
-  ${renderTrendBars(trendSeries, trendBarsX, 295, trendBarsWidth, 158, summary.timeGrowthBySlot)}
-  ${renderTrendFooter(summary, trendSeries, trendFooterX, 520, trendFooterWidth)}
+  <rect x="${trendCardX}" y="${trendCardY}" rx="16" ry="16" width="${trendCardWidth}" height="410" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="${trendCardX}" y="${trendCardY}" rx="16" ry="16" width="${trendCardWidth}" height="58" fill="${THEME_PRIMARY}"/>
+  <text x="${trendCardX + trendCardWidth / 2}" y="${trendCardY + 38}" text-anchor="middle" font-size="26" font-family="Arial, sans-serif" font-weight="700" fill="#fff">EARLY BIRD SALES TREND (Today vs MTD Avg. Value)</text>
+  ${renderTrendLegend(trendLegendX, trendCardY + 77)}
+  ${renderTrendBars(trendSeries, trendBarsX, trendCardY + 70, trendBarsWidth, 230, summary.timeGrowthBySlot)}
+  ${renderTrendFooter(summary, trendSeries, trendFooterX, trendCardY + 372, trendFooterWidth)}
 
-  <rect x="20" y="565" rx="16" ry="16" width="820" height="385" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="20" y="565" rx="16" ry="16" width="820" height="56" fill="#022162"/>
-  <text x="38" y="602" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#fff">REGION &amp; BRANCH SALES PERFORMANCE </text>
-  ${renderRegionBranchSection(summary, topBranches, options)}
+  <rect x="20" y="${lowerSectionY}" rx="16" ry="16" width="820" height="430" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="20" y="${lowerSectionY}" rx="16" ry="16" width="820" height="56" fill="${THEME_PRIMARY}"/>
+  <text x="430" y="${lowerSectionY + 37}" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#fff">REGION &amp; BRANCH SALES PERFORMANCE </text>
+  ${renderRegionBranchSection(summary, topBranches, options, lowerSectionY)}
 
-  <rect x="860" y="565" rx="16" ry="16" width="720" height="385" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="860" y="565" rx="16" ry="16" width="720" height="56" fill="#022162"/>
-  <text x="875" y="602" font-size="24" font-family="Arial, sans-serif" font-weight="700" fill="#fff">HIGHEST &amp; LOWEST GROWTH CATEGORIES (GR %)</text>
-  ${renderDonut(topCategories, 1008, 772, 96)}
-  ${renderCategoryLegend(topCategories, topCategoriesTotal, 1222, 700)}
+  <rect x="860" y="${lowerSectionY}" rx="16" ry="16" width="720" height="430" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="860" y="${lowerSectionY}" rx="16" ry="16" width="720" height="56" fill="${THEME_PRIMARY}"/>
+  <text x="1220" y="${lowerSectionY + 37}" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#fff">TOP 5 CATEGORIES (GR %)</text>
+  ${renderDonut(topCategories, 1028, lowerSectionY + 242, 74)}
+  ${renderCategoryLegend(topCategories, topCategoriesTotal, 1195, lowerSectionY + 142)}
 </svg>`;
 }
 
@@ -92,12 +125,12 @@ function buildSummary(rows) {
   let ytd_915to930 = 0;
   let ytd_930to945 = 0;
   let ytd_945to10 = 0;
-  const ytdDayCount = getYtdDayCount();
+  const mtdDayCount = getMtdDayCount();
 
   rows.forEach((row) => {
-    const sale = toNumber(row.ytd_previous_saleamnt);
+    const sale = toNumber(row.mtd_previous_saleamnt);
     const todaySale = toNumber(row.target_day_saleamnt);
-    const bill = toNumber(row.ytd_previous_billno);
+    const bill = toNumber(row.mtd_previous_billno);
     const todayBill = toNumber(row.target_day_billno);
     const branch = String(row.branch_name || "Unknown");
     const cat = String(row.product_category_name || "Unknown");
@@ -129,7 +162,7 @@ function buildSummary(rows) {
     .filter(([name]) => !isExcludedBranch(name))
     .map(([name, sales]) => {
       const today = todayByBranch.get(name) || 0;
-      const ytdDailyAvg = sales / ytdDayCount;
+      const ytdDailyAvg = sales / mtdDayCount;
       const topCategory = getTopCategory(byBranchCategory.get(name));
       return {
         name,
@@ -145,7 +178,7 @@ function buildSummary(rows) {
     .filter(([name]) => !isExcludedTopCategory(name))
     .map(([name, sales]) => {
       const ytdTotal = byCategory.get(name) || 0;
-      const ytdDailyAvg = ytdTotal / ytdDayCount;
+      const ytdDailyAvg = ytdTotal / mtdDayCount;
       const growth = pct(sales, ytdDailyAvg);
       return { name, sales, growth };
     })
@@ -156,14 +189,27 @@ function buildSummary(rows) {
       row.today_customers !== undefined &&
       row.ytd_avg_customers !== undefined
   );
+  const ytdTotalSourceRow = rows.find(
+    (row) =>
+      row &&
+      (row.ytd_total !== undefined || row.ytd_toal !== undefined)
+  );
+  const ytdTotalFromPayload = ytdTotalSourceRow
+    ? toNumber(getFirstDefined(ytdTotalSourceRow, ["ytd_total", "ytd_toal"]))
+    : 0;
+  const ytdDayCount = getYtdDayCount();
   const customers = customerSourceRow ? toNumber(customerSourceRow.today_customers) : totalTodayBills;
   const ytdAvgCustomersFromPayload = customerSourceRow
-    ? toNumber(customerSourceRow.ytd_avg_customers) / ytdDayCount
+    ? toNumber(customerSourceRow.ytd_avg_customers) / mtdDayCount
     : 0;
-  const ytdAvgBills = totalBills / ytdDayCount;
+  const mtdAvgBills = totalBills / mtdDayCount;
   const kyatPerInvoice = totalTodayBills ? totalTodaySales / totalTodayBills : 0;
-  const ytdAvgSales = totalSales / ytdDayCount;
-  const ytdAvgTicket = ytdAvgBills ? ytdAvgSales / ytdAvgBills : 0;
+  // MTD avg = sum(all mtd_previous_saleamnt) / MTD day count
+  const mtdAvgSales = totalSales / mtdDayCount;
+  // YTD avg = ytd_total (single value from payload) / YTD day count
+  const ytdAvgSales = ytdTotalFromPayload > 0 ? ytdTotalFromPayload / ytdDayCount : 0;
+  const mtdAvgTicket = mtdAvgBills ? mtdAvgSales / mtdAvgBills : 0;
+  const ytdAvgTicket = mtdAvgBills ? ytdAvgSales / mtdAvgBills : 0;
 
   return {
     totalSales,
@@ -172,14 +218,16 @@ function buildSummary(rows) {
     totalTodayBills,
     customers,
     kyatPerInvoice,
+    mtdAvgSales,
+    mtdAvgBills,
+    mtdAvgTicket,
+    mtdAvgCustomers: ytdAvgCustomersFromPayload || mtdAvgBills,
     ytdAvgSales,
-    ytdAvgBills,
     ytdAvgTicket,
-    ytdAvgCustomers: ytdAvgCustomersFromPayload || ytdAvgBills,
-    salesDelta: pct(totalTodaySales, ytdAvgSales),
-    billDelta: pct(totalTodayBills, ytdAvgBills),
-    avgDelta: pct(kyatPerInvoice, ytdAvgTicket),
-    customerDelta: pct(customers, ytdAvgCustomersFromPayload || ytdAvgBills),
+    salesDelta: pct(totalTodaySales, mtdAvgSales),
+    billDelta: pct(totalTodayBills, mtdAvgBills),
+    avgDelta: pct(kyatPerInvoice, mtdAvgTicket),
+    customerDelta: pct(customers, ytdAvgCustomersFromPayload || mtdAvgBills),
     timeBuckets: {
       today: {
         s8to915: today_8to915,
@@ -195,10 +243,10 @@ function buildSummary(rows) {
       }
     },
     timeGrowthBySlot: {
-      "9:15": pctFromTotals(today_8to915, ytd_8to915 / ytdDayCount),
-      "9:30": pctFromTotals(today_915to930, ytd_915to930 / ytdDayCount),
-      "9:45": pctFromTotals(today_930to945, ytd_930to945 / ytdDayCount),
-      "10:00": pctFromTotals(today_945to10, ytd_945to10 / ytdDayCount)
+      "9:15": pctFromTotals(today_8to915, ytd_8to915 / mtdDayCount),
+      "9:30": pctFromTotals(today_915to930, ytd_915to930 / mtdDayCount),
+      "9:45": pctFromTotals(today_930to945, ytd_930to945 / mtdDayCount),
+      "10:00": pctFromTotals(today_945to10, ytd_945to10 / mtdDayCount)
     },
     branches,
     categories,
@@ -206,14 +254,20 @@ function buildSummary(rows) {
   };
 }
 
+function getFirstDefined(obj, keys) {
+  for (const key of keys) {
+    if (obj && obj[key] !== undefined && obj[key] !== null) return obj[key];
+  }
+  return 0;
+}
+
 function kpiIconMarkup(kind) {
   const a =
     'stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
   switch (kind) {
     case "sales":
-      return `<rect x="13" y="20" width="44" height="32" rx="3" ${a}/>
-  <path d="M17 20v-4a3.5 3.5 0 0 1 3.5-3.5h29a3.5 3.5 0 0 1 3.5 3.5v4" ${a}/>
-  <circle cx="35" cy="37" r="7.5" ${a}/>`;
+      return `<circle cx="35" cy="35" r="18" ${a}/>
+  <path d="M35 22v26 M42 28c-2-2-5-3-8-3s-6 1-6 4c0 7 16 2 16 10 0 3-3 5-8 5-3 0-6-1-8-3" ${a}/>`;
     case "invoice":
       return `<path d="M20 16h22l8 8v34H20V16z" ${a}/>
   <path d="M28 32h20 M28 40h20 M28 48h14" ${a}/>`;
@@ -231,16 +285,23 @@ function kpiIconMarkup(kind) {
 
 function metricCard(x, y, title, value, ytdValue, deltaValue, iconKind) {
   const isNegative = Number(deltaValue) < 0;
-  const deltaColor = isNegative ? "#ef4444" : "#16a34a";
+  const deltaColor = isNegative ? THEME_NEGATIVE_RED : "#16a34a";
   const arrow = isNegative ? "↘" : "↗";
   const icon = kpiIconMarkup(iconKind);
-  return `<rect x="${x}" y="${y}" rx="16" ry="16" width="375" height="130" fill="#fff" stroke="#dbe2ef"/>
-  <rect x="${x + 16}" y="${y + 18}" rx="16" ry="16" width="72" height="72" fill="#0d3fa6"/>
-  <g transform="translate(${x + 17},${y + 19})" aria-hidden="true">${icon}</g>
-  <text x="${x + 106}" y="${y + 34}" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(title)}</text>
-  <text x="${x + 106}" y="${y + 72}" font-size="27" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(value)}</text>
-  <text x="${x + 106}" y="${y + 98}" font-size="15" font-family="Arial, sans-serif" font-weight="700" fill="#64748b">YTD: ${escapeXml(ytdValue)}</text>
-  <text x="${x + 106}" y="${y + 122}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="${deltaColor}">${arrow} ${formatPct(deltaValue)}%</text>`;
+  const valueText = String(value);
+  const endsWithMmk = /\sMMK$/i.test(valueText);
+  const mainValue = endsWithMmk ? valueText.replace(/\sMMK$/i, "") : valueText;
+  const mmkLine = endsWithMmk
+    ? `<text x="${x + 120}" y="${y + 120}" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#111827">MMK</text>`
+    : "";
+  return `<rect x="${x}" y="${y}" rx="16" ry="16" width="375" height="186" fill="#fff" stroke="#dbe2ef"/>
+  <rect x="${x + 16}" y="${y + 18}" rx="16" ry="16" width="86" height="86" fill="${THEME_PRIMARY}"/>
+  <g transform="translate(${x + 24},${y + 26})" aria-hidden="true">${icon}</g>
+  <text x="${x + 120}" y="${y + 38}" font-size="23" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(title)}</text>
+  <text x="${x + 120}" y="${y + 92}" font-size="56" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(mainValue)}</text>
+  ${mmkLine}
+  <text x="${x + 120}" y="${y + 145}" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#64748b">MTD: ${escapeXml(ytdValue)}</text>
+  <text x="${x + 120}" y="${y + 176}" font-size="38" font-family="Arial, sans-serif" font-weight="700" fill="${deltaColor}">${arrow} ${formatPct(deltaValue)}%</text>`;
 }
 
 function todaySaleCard(summary, x = 20, y = 225, width = 375) {
@@ -250,29 +311,29 @@ function todaySaleCard(summary, x = 20, y = 225, width = 375) {
   const growthText = `${growth > 0 ? "+" : ""}${growth}%`;
   const stroke = Math.max(1, Math.min(99, Math.abs(growth)));
   const isPositive = growth >= 0;
-  const trendColor = isPositive ? "#22c55e" : "#f87171";
+  const trendColor = isPositive ? "#22c55e" : THEME_NEGATIVE_RED;
   const trendLabel = isPositive ? "↗ YTD avg value:" : "↘ YTD avg value:";
-  const cx = x + 238;
-  const cy = y + 112;
-  const ringR = 88;
-  const ringStroke = 24;
+  const cx = x + width / 2;
+  const cy = y + 160;
+  const ringR = 75;
+  const ringStroke = 20;
   const ringCircumference = 2 * Math.PI * ringR;
   const rightX = x + width - 25;
   const separatorX1 = x + 36;
   const separatorX2 = x + width - 39;
   const textLeftX = x + 36;
-  return `<rect x="${x}" y="${y}" rx="16" ry="16" width="${width}" height="330" fill="#082a78" stroke="#0f3a9c" filter="url(#cardShadow)"/>
+  return `<rect x="${x}" y="${y}" rx="16" ry="16" width="${width}" height="390" fill="${THEME_PRIMARY}" stroke="${THEME_PRIMARY_DARK}" filter="url(#cardShadow)"/>
   <circle cx="${cx}" cy="${cy}" r="${ringR}" fill="none" stroke="#edf2fa" stroke-width="${ringStroke}"/>
   <circle cx="${cx}" cy="${cy}" r="${ringR}" fill="none" stroke="${trendColor}" stroke-width="${ringStroke}" stroke-linecap="round" stroke-dasharray="${(stroke / 100) * ringCircumference} ${ringCircumference}" transform="rotate(-90 ${cx} ${cy})"/>
-  <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="${trendColor}">${growthText}</text>
+  <text x="${cx}" y="${cy + 9}" text-anchor="middle" font-size="35" font-family="Arial, sans-serif" font-weight="700" fill="${trendColor}">${growthText}</text>
   <text x="${cx}" y="${cy + 34}" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#dbeafe">Grand Total</text>
   <text x="${cx}" y="${cy + 50}" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#dbeafe">vs. YTD</text>
-  <text x="${x + width - 28}" y="${y + 54}" text-anchor="end" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">TODAY SALE</text>
-  <line x1="${separatorX1}" y1="${y + 220}" x2="${separatorX2}" y2="${y + 220}" stroke="#9ab4e0"/>
-  <text x="${textLeftX}" y="${y + 266}" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#f8fafc">TODAY</text>
-  <text x="${rightX}" y="${y + 266}" text-anchor="end" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${formatM(today)}M MMK</text>
-  <text x="${textLeftX}" y="${y + 304}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#4ade80">YTD AVG VALUE</text>
-  <text x="${rightX}" y="${y + 304}" text-anchor="end" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${formatM(ytd)}M MMK</text>`;
+  <text x="${cx}" y="${y + 52}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">TODAY's SALE</text>
+  <line x1="${separatorX1}" y1="${y + 278}" x2="${separatorX2}" y2="${y + 278}" stroke="#9ab4e0"/>
+  <text x="${textLeftX}" y="${y + 323}" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#f8fafc">TODAY</text>
+  <text x="${rightX}" y="${y + 323}" text-anchor="end" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${formatM(today)}M MMK</text>
+  <text x="${textLeftX}" y="${y + 361}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#4ade80">YTD AVG. VALUE</text>
+  <text x="${rightX}" y="${y + 361}" text-anchor="end" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff">${formatM(ytd)}M MMK</text>`;
 }
 
 function renderDualBarChart(series, x, y, width, height) {
@@ -310,11 +371,11 @@ function buildTrend(summary) {
     .some((v) => Number(v) > 0);
 
   if (hasTimeData) {
-    const ytdDayCount = getYtdDayCount();
-    const y1 = (Number(y.s8to915) || 0) / ytdDayCount;
-    const y2 = (Number(y.s915to930) || 0) / ytdDayCount;
-    const y3 = (Number(y.s930to945) || 0) / ytdDayCount;
-    const y4 = (Number(y.s945to10) || 0) / ytdDayCount;
+    const periodDayCount = getMtdDayCount();
+    const y1 = (Number(y.s8to915) || 0) / periodDayCount;
+    const y2 = (Number(y.s915to930) || 0) / periodDayCount;
+    const y3 = (Number(y.s930to945) || 0) / periodDayCount;
+    const y4 = (Number(y.s945to10) || 0) / periodDayCount;
     const t1 = Number(t.s8to915) || 0;
     const t2 = Number(t.s915to930) || 0;
     const t3 = Number(t.s930to945) || 0;
@@ -328,7 +389,7 @@ function buildTrend(summary) {
   }
 
   const total = summary.totalTodaySales;
-  const ytd = summary.ytdAvgSales;
+  const ytd = summary.mtdAvgSales;
   const times = ["9:15", "9:30", "9:45", "10:00"];
   return times.map((time, idx) => {
     const factor = 0.32 + idx * 0.18;
@@ -365,7 +426,7 @@ function renderTrendBars(series, x, y, width, height, growthBySlot = {}) {
   const out = [];
   const gValues = series.map((s) => Number(growthBySlot[s.time])).filter((v) => Number.isFinite(v));
   const gMin = Math.min(-20, ...(gValues.length ? gValues : [0]));
-  const gMax = Math.max(100, ...(gValues.length ? gValues : [0]));
+  const gMax = Math.max(150, ...(gValues.length ? gValues : [0]));
 
   for (let i = 0; i < 5; i += 1) {
     const gy = y + (height * i) / 4;
@@ -401,9 +462,9 @@ function renderTrendBars(series, x, y, width, height, growthBySlot = {}) {
     out.push(`<path d="${d}" fill="none" stroke="#5f6f8f" stroke-width="1.8" stroke-dasharray="2 3" stroke-linecap="round"/>`);
     growthPoints.forEach((p) => {
       const gText = `${p.g > 0 ? "+" : ""}${p.g.toFixed(1)}%`;
-      const gColor = p.g >= 0 ? "#16a34a" : "#ef4444";
+      const gColor = p.g >= 0 ? "#024b00ff" : THEME_NEGATIVE_RED;
       out.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.2" fill="#4d5f82" stroke="#ffffff" stroke-width="1"/>`);
-      out.push(`<text x="${p.x.toFixed(1)}" y="${(p.y - 9).toFixed(1)}" text-anchor="middle" font-size="14.5" font-family="Arial, sans-serif" font-weight="700" fill="${gColor}" stroke="#ffffff" stroke-width="2.2" paint-order="stroke fill">${gText}</text>`);
+      out.push(`<text x="${p.x.toFixed(1)}" y="${(p.y - 9).toFixed(1)}" text-anchor="middle" font-size="16.5" font-family="Arial, sans-serif" font-weight="800" fill="${gColor}" stroke="#ffffff" stroke-width="2" paint-order="stroke fill">${gText}</text>`);
     });
   }
 
@@ -420,7 +481,7 @@ function renderTrendLegend(x, y) {
     <rect x="${x}" y="${y}" width="12" height="12" rx="2" ry="2" fill="url(#trendToday)"/>
     <text x="${x + 18}" y="${y + 10.5}" font-size="15" font-family="Arial, sans-serif" fill="#1f2937">Today</text>
     <rect x="${x + 80}" y="${y}" width="12" height="12" rx="2" ry="2" fill="url(#trendYtd)"/>
-    <text x="${x + 98}" y="${y + 10.5}" font-size="15" font-family="Arial, sans-serif" fill="#1f2937">YTD Avg</text>
+    <text x="${x + 98}" y="${y + 10.5}" font-size="15" font-family="Arial, sans-serif" fill="#1f2937">MTD Avg.</text>
     <line x1="${x + 178}" y1="${y + 6}" x2="${x + 202}" y2="${y + 6}" stroke="#5f6f8f" stroke-width="1.6" stroke-dasharray="2 3" stroke-linecap="round"/>
     <circle cx="${x + 190}" cy="${y + 6}" r="2.8" fill="#4d5f82" stroke="#ffffff" stroke-width="1"/>
     <text x="${x + 210}" y="${y + 10.5}" font-size="15" font-family="Arial, sans-serif" fill="#1f2937">GR %</text>
@@ -431,7 +492,7 @@ function renderTrendFooter(summary, series, x, y, width = 1020) {
   const tb = summary.timeBuckets || {};
   const t = tb.today || {};
   const ytdSlots = tb.ytd || {};
-  const ytdDayCount = getYtdDayCount();
+  const periodDayCount = getMtdDayCount();
   const todayWindowTotal =
     (Number(t.s8to915) || 0) +
     (Number(t.s915to930) || 0) +
@@ -441,14 +502,14 @@ function renderTrendFooter(summary, series, x, y, width = 1020) {
     ((Number(ytdSlots.s8to915) || 0) +
       (Number(ytdSlots.s915to930) || 0) +
       (Number(ytdSlots.s930to945) || 0) +
-      (Number(ytdSlots.s945to10) || 0)) / Math.max(1, ytdDayCount);
+      (Number(ytdSlots.s945to10) || 0)) / Math.max(1, periodDayCount);
 
   const todayBase = todayWindowTotal || (Number(summary.totalTodaySales) || 0);
-  const ytdBase = ytdWindowAvg || (Number(summary.ytdAvgSales) || 0);
+  const ytdBase = ytdWindowAvg || (Number(summary.mtdAvgSales) || 0);
   const variance = todayBase - ytdBase;
   const growth = pct(todayBase, ytdBase);
-  const varianceColor = variance >= 0 ? "#16a34a" : "#ef4444";
-  const growthColor = growth >= 0 ? "#16a34a" : "#ef4444";
+  const varianceColor = variance >= 0 ? "#16a34a" : THEME_NEGATIVE_RED;
+  const growthColor = growth >= 0 ? "#16a34a" : THEME_NEGATIVE_RED;
   const growthText = `${growth >= 0 ? "+" : "-"}${Math.abs(growth).toFixed(1)}%`;
   const varianceText = `${variance >= 0 ? "+" : "-"}${formatM(Math.abs(variance))}M`;
   const topY = y - 8;
@@ -460,7 +521,7 @@ function renderTrendFooter(summary, series, x, y, width = 1020) {
   return `
     <text x="${col1}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Early Bird Sales</text>
     <text x="${col1}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(todayBase)}M MMK</text>
-    <text x="${col2}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">YTD Avg Value (Same Time)</text>
+    <text x="${col2}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">MTD Avg. Value (Same Time)</text>
     <text x="${col2}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(ytdBase)}M MMK</text>
     <text x="${col3}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Variance</text>
     <text x="${col3}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="${varianceColor}">${varianceText} MMK</text>
@@ -472,11 +533,11 @@ function renderTrendFooter(summary, series, x, y, width = 1020) {
 function renderBranchTable(rows, totalSales) {
   const y = 700;
   const out = [
-    '<rect x="360" y="640" width="420" height="30" fill="#022162"/>',
+    `<rect x="360" y="640" width="420" height="30" fill="${THEME_PRIMARY}"/>`,
     '<text x="380" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">Branch</text>',
     '<text x="520" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">Today</text>',
     '<text x="615" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">GR %</text>',
-    '<text x="690" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">Top Category</text>'
+    '<text x="690" y="660" font-size="16" font-family="Arial, sans-serif" fill="#fff">Cate;</text>'
   ];
 
   rows.forEach((r, i) => {
@@ -484,89 +545,71 @@ function renderBranchTable(rows, totalSales) {
     const growth = pct(r.sales, totalSales / rows.length);
     out.push(`<text x="380" y="${yy}" font-size="16" font-family="Arial, sans-serif" fill="#111827">${escapeXml(shortBranch(r.name))}</text>`);
     out.push(`<text x="520" y="${yy}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(r.sales)} M MMK</text>`);
-    out.push(`<text x="615" y="${yy}" font-size="16" font-family="Arial, sans-serif" fill="${growth >= 0 ? "#16a34a" : "#ef4444"}">${growth > 0 ? "+" : ""}${growth}%</text>`);
+    out.push(`<text x="615" y="${yy}" font-size="16" font-family="Arial, sans-serif" fill="${growth >= 0 ? "#16a34a" : THEME_NEGATIVE_RED}">${growth > 0 ? "+" : ""}${growth}%</text>`);
     out.push('<text x="705" y="' + yy + '" font-size="16" font-family="Arial, sans-serif" fill="#111827">Mixed</text>');
   });
 
   return out.join("\n");
 }
 
-function renderRegionBranchSection(summary, rows, options = {}) {
+function renderRegionBranchSection(summary, rows, options = {}, baseY = 565) {
   const regionRows = buildRegionRows(summary.branches)
     .slice()
     .sort((a, b) => (Number(b.growth) || 0) - (Number(a.growth) || 0));
   const branchRows = rows;
-  const regionTotalToday = regionRows.reduce((sum, row) => sum + (Number(row.today) || 0), 0);
-  const regionTotalSales = regionRows.reduce((sum, row) => sum + (Number(row.sales) || 0), 0);
-  const regionTotalGrowth = pct(regionTotalToday, regionTotalSales / Math.max(1, getYtdDayCount()));
-  const regionTotalGrowthColor = regionTotalGrowth >= 0 ? "#16a34a" : "#ef4444";
-  const regionTotalGrowthText = `${regionTotalGrowth > 0 ? "+" : ""}${regionTotalGrowth}%`;
   const regionHeaderX = 40;
   const regionHeaderW = 380;
   const branchHeaderX = 442;
   const branchHeaderW = 380;
+  const headerY = baseY + 75;
+  const headerTextY = headerY + 20;
+  const listStartY = baseY + 141;
   const regionList = regionRows.map((r, idx) => {
-    const y = 706 + idx * 34;
-    const growthColor = r.growth >= 0 ? "#16a34a" : "#ef4444";
-    const growthText = `${r.growth > 0 ? "+" : ""}${r.growth}%`;
-    const topCategory = limitText(shortCategory(r.topCategory || "Mixed"), 14);
+    const y = listStartY + idx * 50;
+    const growthColor = r.growth >= 0 ? "#16a34a" : THEME_NEGATIVE_RED;
+    const growthText = formatPctWhole(r.growth);
+    const topCategory = shortCategory(r.topCategory || "Mixed");
     return `
-      <text x="48" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(r.name)}</text>
-      <text x="160" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${formatM(r.today)}M</text>
-      <text x="230" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
-      <text x="316" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(topCategory)}</text>
+      <text x="48" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(r.name)}</text>
+      <text x="160" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${formatM(r.today)}M</text>
+      <text x="230" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
+      <text x="316" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(topCategory)}</text>
     `;
   }).join("");
 
   const branchList = branchRows.map((r, idx) => {
-    const y = 706 + idx * 44;
-    const growthColor = r.growth >= 0 ? "#16a34a" : "#ef4444";
-    const growthText = `${r.growth > 0 ? "+" : ""}${r.growth}%`;
+    const y = listStartY + idx * 50;
+    const growthColor = r.growth >= 0 ? "#16a34a" : THEME_NEGATIVE_RED;
+    const growthText = formatPctWhole(r.growth);
     const branchShort = limitText(shortBranch(r.name), 21).split('/')[1].replace('-','');
-    const catShort = limitText(shortCategory(r.topCategory || "Mixed"), 17);
+    const catShort = shortCategory(r.topCategory || "Mixed");
     return `
-      <text x="454" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(branchShort)}</text>
-      <text x="567" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${formatM(r.today)}M</text>
-      <text x="630" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
-      <text x="700" y="${y}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(catShort)}</text>
+      <text x="444" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(branchShort)}</text>
+      <text x="590" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${formatM(r.today)}M</text>
+      <text x="652" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>
+      <text x="724" y="${y}" font-size="17" font-family="Arial, sans-serif" font-weight="700" fill="#1f2937">${escapeXml(catShort)}</text>
     `;
   }).join("");
 
-  const growthTotal = pct(summary.totalTodaySales, summary.ytdAvgSales);
-  const growthTotalColor = growthTotal >= 0 ? "#16a34a" : "#ef4444";
-  const growthTotalText = `${growthTotal > 0 ? "+" : ""}${growthTotal}%`;
-
   return `
-    <rect x="${regionHeaderX}" y="640" width="${regionHeaderW}" height="30" fill="#022162"/>
-    <text x="48" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Region</text>
-    <text x="160" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Today</text>
-    <text x="230" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">GR %</text>
-    <text x="316" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Top Category</text>
+    <rect x="${regionHeaderX}" y="${headerY}" width="${regionHeaderW}" height="30" fill="${THEME_PRIMARY}"/>
+    <text x="48" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Region</text>
+    <text x="160" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Today</text>
+    <text x="230" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">GR %</text>
+    <text x="316" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Cate;</text>
     ${regionList}
 
-    <rect x="${branchHeaderX}" y="640" width="${branchHeaderW}" height="30" fill="#022162"/>
-    <text x="454" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Branch</text>
-    <text x="567" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Today</text>
-    <text x="630" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">GR %</text>
-    <text x="698" y="660" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Top Category</text>
+    <rect x="${branchHeaderX}" y="${headerY}" width="${branchHeaderW}" height="30" fill="${THEME_PRIMARY}"/>
+    <text x="444" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Branch</text>
+    <text x="590" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Today</text>
+    <text x="652" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">GR %</text>
+    <text x="724" y="${headerTextY}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Cate;</text>
     ${branchList}
-
-    <rect x="${regionHeaderX}" y="892" width="${regionHeaderW}" height="48" fill="#0b1d57"/>
-    <text x="48" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Grand Total</text>
-    <text x="150" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">${formatM(regionTotalToday)} M</text>
-    <text x="230" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="${regionTotalGrowthColor}">${regionTotalGrowthText}</text>
-    <text x="316" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">All Categories</text>
-
-    <rect x="${branchHeaderX}" y="892" width="${branchHeaderW}" height="48" fill="#0b1d57"/>
-    <text x="454" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">Grand Total</text>
-    <text x="560" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">${formatM(summary.totalTodaySales)} M</text>
-    <text x="627" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="${growthTotalColor}">${growthTotalText}</text>
-    <text x="698" y="921" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#fff">All categories</text>
   `;
 }
 
 function buildRegionRows(branches) {
-  const ytdDayCount = getYtdDayCount();
+  const periodDayCount = getMtdDayCount();
   const byCode = new Map(
     (branches || []).map((b) => [extractBranchCode(b.name), b])
   );
@@ -606,7 +649,7 @@ function buildRegionRows(branches) {
       name: region.name,
       today,
       sales,
-      growth: pct(today, sales / ytdDayCount),
+      growth: pct(today, sales / periodDayCount),
       topCategory
     };
   });
@@ -632,13 +675,19 @@ function renderDonut(items, cx, cy, r) {
     const len = frac * circle;
     const mid = offset + len / 2;
     const angle = -Math.PI / 2 + (mid / circle) * 2 * Math.PI;
-    const rawX = cx + Math.cos(angle) * (r + 13);
-    const ly = cy + Math.sin(angle) * (r + 18);
+    const rawX = cx + Math.cos(angle) * (r + 10);
+    const ly = cy + Math.sin(angle) * (r + 14);
     const lx = Math.max(minLabelX, Math.min(maxLabelX, rawX));
     const percent = Math.round(frac * 100);
-    const textAnchor = rawX >= 1110 ? "end" : rawX <= 830 ? "start" : (Math.cos(angle) > 0.15 ? "start" : Math.cos(angle) < -0.15 ? "end" : "middle");
+    const rightBound = cx + 102;
+    const leftBound = cx - 178;
+    const textAnchor = rawX >= rightBound
+      ? "end"
+      : rawX <= leftBound
+        ? "start"
+        : (Math.cos(angle) > 0.15 ? "start" : Math.cos(angle) < -0.15 ? "end" : "middle");
     const arc = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[idx]}" stroke-width="42" stroke-dasharray="${len} ${circle - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
-    const label = `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${textAnchor}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a" stroke="#ffffff" stroke-width="2.4" paint-order="stroke fill">${formatM(item.sales)}M (${percent}%)</text>`;
+    const label = `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${textAnchor}" font-size="13" font-family="Arial, sans-serif" font-weight="700" fill="#0f172a" stroke="#ffffff" stroke-width="2.2" paint-order="stroke fill">${formatM(item.sales)}M (${percent}%)</text>`;
     offset += len;
     return { arc, label };
   });
@@ -648,31 +697,33 @@ function renderDonut(items, cx, cy, r) {
   return `${arcs}
   <circle cx="${cx}" cy="${cy}" r="${Math.max(60, r - 22)}" fill="#fff"/>
   ${labels}
-  <text x="${cx}" y="${cy + 6}" text-anchor="middle" font-size="20" font-family="Arial, sans-serif" font-weight="700" fill="#4b5563">Today's Sales</text>`;
+  <text x="${cx}" y="${cy + 6}" text-anchor="middle" font-size="15" font-family="Arial, sans-serif" font-weight="700" fill="#4b5563">Today's Portion</text>`;
 }
 
 function renderCategoryLegend(items, totalSales, x, y) {
   const colors = getDonutColors(items.length);
+  const salesColX = 1435;
+  const growthColX = 1545;
   const header = `
-    <text x="${x + 12}" y="${y - 18}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#374151">Category</text>
-    <text x="1440" y="${y - 18}" text-anchor="end" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#374151">Sales</text>
-    <text x="1560" y="${y - 18}" text-anchor="end" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#374151">GR %</text>
+    <text x="${x + 12}" y="${y - 18}" font-size="19" font-family="Arial, sans-serif" font-weight="700" fill="#374151">Category</text>
+    <text x="${salesColX}" y="${y - 18}" text-anchor="end" font-size="19" font-family="Arial, sans-serif" font-weight="700" fill="#374151">Sales</text>
+    <text x="${growthColX}" y="${y - 18}" text-anchor="end" font-size="19" font-family="Arial, sans-serif" font-weight="700" fill="#374151">GR %</text>
   `;
   const rows = items.map((item, idx) => {
     const growth = item.growth || 0;
-    const growthColor = growth >= 0 ? "#16a34a" : "#ef4444";
-    const growthText = `${growth > 0 ? "+" : ""}${growth}%`;
-    const rowY = y + idx * 46;
-    return `<circle cx="${x}" cy="${y + idx * 46}" r="8" fill="${colors[idx % colors.length]}"/>
-      <text x="${x + 22}" y="${rowY + 8}" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(limitText(shortCategory(item.name), 18))}</text>
-      <text x="1440" y="${rowY + 8}" text-anchor="end" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(item.sales)}M</text>
-      <text x="1560" y="${rowY + 8}" text-anchor="end" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>`;
+    const growthColor = growth >= 0 ? "#16a34a" : THEME_NEGATIVE_RED;
+    const growthText = formatPctWhole(growth);
+    const rowY = y + idx * 56;
+    return `<circle cx="${x}" cy="${y + idx * 56}" r="9" fill="${colors[idx % colors.length]}"/>
+      <text x="${x + 24}" y="${rowY + 8}" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${escapeXml(limitText(shortCategory(item.name), 15))}</text>
+      <text x="${salesColX}" y="${rowY + 8}" text-anchor="end" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(item.sales)}M</text>
+      <text x="${growthColX}" y="${rowY + 8}" text-anchor="end" font-size="18" font-family="Arial, sans-serif" font-weight="700" fill="${growthColor}">${growthText}</text>`;
   }).join("\n");
   return `${header}\n${rows}`;
 }
 
 function getDonutColors(count) {
-  const base = ["#0b3b92", "#144bb0", "#2d63c0", "#6d93d1", "#adbfde"];
+  const base = [THEME_PRIMARY, "#1f4aa7", "#3969bf", "#6b90d0", "#a7bbdf"];
   if (count <= base.length) return base;
   return Array.from({ length: count }, (_, i) => base[i % base.length]);
 }
@@ -683,7 +734,7 @@ function shortBranch(v) {
 }
 
 function shortCategory(v) {
-  return String(v).replace(/^\d{2}-/, "").trim();
+  return renameCategoryLabel(getBaseCategoryName(v));
 }
 
 function isExcludedBranch(name) {
@@ -692,8 +743,18 @@ function isExcludedBranch(name) {
 }
 
 function isExcludedTopCategory(name) {
-  const n = shortCategory(name).toLowerCase();
+  const n = getBaseCategoryName(name).toLowerCase();
   return n === "office use" || n === "promotion/sector" || n === "promotion/discount";
+}
+
+function getBaseCategoryName(value) {
+  return String(value || "").replace(/^\d{2}-/, "").trim();
+}
+
+function renameCategoryLabel(name) {
+  const base = String(name || "").trim();
+  if (!base) return base;
+  return CATEGORY_RENAME_MAP[base] || base;
 }
 
 function branchCode(v) {
@@ -1195,11 +1256,20 @@ function formatCompact(value) {
   return `${Math.round(n)}`;
 }
 
+function getMtdDayCount() {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysSinceMonthStart = Math.floor((now - monthStart) / msPerDay) - 1;
+  // MTD average is up to yesterday, so day 1..yesterday count.
+  return Math.max(1, daysSinceMonthStart);
+}
+
 function getYtdDayCount() {
   const now = new Date();
   const yearStart = new Date(now.getFullYear(), 0, 1);
   const msPerDay = 24 * 60 * 60 * 1000;
-  const daysSinceYearStart = Math.floor((now - yearStart) / msPerDay);
+  const daysSinceYearStart = Math.floor((now - yearStart) / msPerDay) - 1;
   // YTD average is up to yesterday, so Jan 1..yesterday count.
   return Math.max(1, daysSinceYearStart);
 }
@@ -1214,6 +1284,14 @@ function formatPct(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "0.0";
   return Math.abs(n).toFixed(1);
+}
+
+function formatPctWhole(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "0%";
+  const rounded = Math.round(n);
+  if (rounded > 0) return `+${rounded}%`;
+  return `${rounded}%`;
 }
 
 function escapeXml(value) {
@@ -1244,7 +1322,7 @@ async function saveDashboardPng(rows, outputDir) {
   const filepath = path.join(outputDir, filename);
 
   const width = 1600;
-  const height = 980;
+  const height = 1120;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
   ctx.fillStyle = "#f5f7fb";
