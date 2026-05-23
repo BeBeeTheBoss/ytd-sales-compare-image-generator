@@ -1310,7 +1310,7 @@ function getYtdDayCount() {
   const now = new Date();
   const yearStart = new Date(now.getFullYear(), 0, 1);
   const msPerDay = 24 * 60 * 60 * 1000;
-  const daysSinceYearStart = Math.floor((now - yearStart) / msPerDay);
+  const daysSinceYearStart = Math.floor((now - yearStart) / msPerDay) - 7
   // YTD average is up to yesterday, so Jan 1..yesterday count.
   return Math.max(1, daysSinceYearStart);
 }
