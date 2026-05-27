@@ -554,10 +554,10 @@ function renderTrendFooter(summary, series, x, y, width = 1020) {
   const col3 = x + colWidth * 2.5;
   const col4 = x + colWidth * 3.5;
   return `
-    <text x="${col1}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Early Bird Sales</text>
-    <text x="${col1}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(todayBase)}M MMK</text>
-    <text x="${col2}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">YTD Avg. Value (Same Time)</text>
-    <text x="${col2}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(ytdBase)}M MMK</text>
+    <text x="${col1}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">YTD Avg. Value (Same Time)</text>
+    <text x="${col1}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(ytdBase)}M MMK</text>
+    <text x="${col2}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Early Bird Sales</text>
+    <text x="${col2}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="#111827">${formatM(todayBase)}M MMK</text>
     <text x="${col3}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Variance</text>
     <text x="${col3}" y="${topY + 28}" text-anchor="middle" font-size="21" font-family="Arial, sans-serif" font-weight="700" fill="${varianceColor}">${varianceText} MMK</text>
     <text x="${col4}" y="${topY}" text-anchor="middle" font-size="17" font-family="Arial, sans-serif" fill="#111827">Gr%</text>
